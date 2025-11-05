@@ -9,7 +9,7 @@ export default function Home() {
           src="/next.svg"
           alt="Next.js logo"
           width={100}
-          height={15}
+          height={2000}
           priority
         />
         <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
