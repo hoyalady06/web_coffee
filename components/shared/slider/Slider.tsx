@@ -18,7 +18,7 @@ export function Slider() {
         >
           <SwiperSlide>
             <Image
-              src="/banner1.png"
+              src="/banner/banner1.png"
               alt="Banner 1"
               width={1920}
               height={600}
@@ -28,7 +28,7 @@ export function Slider() {
           </SwiperSlide>
           <SwiperSlide>
             <Image
-              src="/banner2.png"
+              src="/banner/banner2.png"
               alt="Banner 2"
               width={1920}
               height={600}
@@ -37,7 +37,7 @@ export function Slider() {
           </SwiperSlide>
           <SwiperSlide>
             <Image
-              src="/banner3.png"
+              src="/banner/banner3.png"
               alt="Banner 3"
               width={1920}
               height={600}
