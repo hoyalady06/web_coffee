@@ -3,6 +3,8 @@ import { Nunito } from "next/font/google";
 import "./globals.css";
 import { Header } from "@/components/shared/header";
 import { Toaster } from "react-hot-toast";
+import { LanguageProvider } from "@/context/LanguageContext";
+import { Footer } from '@/components/shared/footer';
 
 const nunito = Nunito({
   subsets: ["cyrillic"],
@@ -17,17 +19,22 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
     <html lang="ru">
       <body className={nunito.className}>
-        <main className="min-h-screen">
-          <Header />
-          {children}
-          <Toaster position="top-right" reverseOrder={false} />
-        </main>
+        <LanguageProvider>
+          <main className="min-h-screen flex flex-col justify-between">
+            <div>
+              <Header />
+              {children}
+            </div>
+            <Footer />
+            <Toaster position="top-right" reverseOrder={false} />
+          </main>
+        </LanguageProvider>
       </body>
     </html>
   );
