@@ -6,9 +6,9 @@ import clsx from 'clsx';
 const categories = [
   { id: 'cakes', name: 'Торты' },
   { id: 'pies', name: 'Пироги' },
-  { id: 'bread', name: 'Нан' },
+  { id: 'bread', name: 'Хлеб' },
   { id: 'bakery', name: 'Выпечка' },
-  { id: 'pastry', name: 'Пирожные' },
+  { id: 'desserts', name: 'Пирожные' },
   { id: 'cookies', name: 'Печенье' },
   { id: 'icecream', name: 'Мороженое' },
   { id: 'combo', name: 'Комбо меню' },
