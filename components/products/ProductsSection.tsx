@@ -1,30 +1,20 @@
 'use client';
 
 import { useState } from 'react';
+import type { Product, Category } from '@/data/products';
 import { ProductCard } from './ProductCard';
 import { ProductModal } from './ProductModal';
-import { allProducts, type Product, type Category } from '@/data/products';
+import { allProducts } from '@/data/products';
 
 interface ProductsSectionProps {
-  category: Category;
+  category: Category; // ← тип категории
 }
 
 export function ProductsSection({ category }: ProductsSectionProps) {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
+  // Фильтруем товары по категории
   const filtered = allProducts.filter((p) => p.category === category);
-
-  const titles: Record<Category, string> = {
-    cakes: 'Наши торты',
-    pies: 'Наши пироги',
-    bread: 'Наш нан',
-    bakery: 'Наша выпечка',
-    desserts: 'Наши пирожные',
-    cookies: 'Наше печенье',
-    icecream: 'Наше мороженое',
-    combo: 'Наше комбо меню',
-    cafe: 'Наше кафе',   // ← правильная категория
-  };
 
   return (
     <section className="py-10 bg-[#fff9f5]">
@@ -32,33 +22,26 @@ export function ProductsSection({ category }: ProductsSectionProps) {
 
         {/* Заголовок */}
         <h2 className="text-3xl font-bold text-[#4b2e16] mb-6">
-          {titles[category]}
+          Наши товары
         </h2>
 
-        {/* Карточки */}
+        {/* Карточки товаров */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {filtered.map((p) => (
+          {filtered.map((product) => (
             <ProductCard
-              key={p.id}
-              name={p.name}
-              price={p.price}
-              image={p.image}
-              description={p.description}
-              onOrder={() => setSelectedProduct(p)}
+              key={product.id}
+              product={product}
+              onOpenModal={setSelectedProduct}
             />
           ))}
         </div>
       </div>
 
-      {/* Модалка */}
+      {/* Модалка товара */}
       {selectedProduct && (
         <ProductModal
-          open={!!selectedProduct}
+          product={selectedProduct}
           onClose={() => setSelectedProduct(null)}
-          name={selectedProduct.name}
-          price={selectedProduct.price}
-          image={selectedProduct.image}
-          description={selectedProduct.description ?? 'Вкусный десерт для вас!'}
         />
       )}
     </section>

@@ -5,7 +5,7 @@ import { Header } from "@/components/shared/header";
 import { Toaster } from "react-hot-toast";
 import { LanguageProvider } from "@/context/LanguageContext";
 import { Footer } from '@/components/shared/footer';
-
+import { CartProvider } from "@/context/CartContext";
 const nunito = Nunito({
   subsets: ["cyrillic"],
   variable: "--font-nunito",
@@ -24,18 +24,21 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ru">
-      <body className={nunito.className}>
-        <LanguageProvider>
-          <main className="min-h-screen flex flex-col justify-between">
-            <div>
-              <Header />
-              {children}
-            </div>
-            <Footer />
-            <Toaster position="top-right" reverseOrder={false} />
-          </main>
-        </LanguageProvider>
-      </body>
-    </html>
+  <body className={nunito.className}>
+    <LanguageProvider>
+      <CartProvider>
+         <main className="min-h-screen flex flex-col justify-between">
+          <div>
+            <Header />
+            {children}
+          </div>
+           <Footer />
+          <Toaster position="top-right" reverseOrder={false} />
+        </main>
+      </CartProvider>
+    </LanguageProvider>
+  </body>
+</html>
+
   );
 }
