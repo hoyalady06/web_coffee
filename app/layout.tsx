@@ -6,6 +6,9 @@ import { Toaster } from "react-hot-toast";
 import { LanguageProvider } from "@/context/LanguageContext";
 import { Footer } from '@/components/shared/footer';
 import { CartProvider } from "@/context/CartContext";
+import { CategoryTabs } from "@/components/catalog/CategoryTabs";
+import { Slider } from "@/components/shared/slider/Slider";
+
 const nunito = Nunito({
   subsets: ["cyrillic"],
   variable: "--font-nunito",
@@ -24,21 +27,29 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ru">
-  <body className={nunito.className}>
-    <LanguageProvider>
-      <CartProvider>
-         <main className="min-h-screen flex flex-col justify-between">
-          <div>
-            <Header />
-            {children}
-          </div>
-           <Footer />
-          <Toaster position="top-right" reverseOrder={false} />
-        </main>
-      </CartProvider>
-    </LanguageProvider>
-  </body>
-</html>
+      <body className={`${nunito.className} bg-[#fbf4ef]`}>
+        <LanguageProvider>
+          <CartProvider>
+            <main className="min-h-screen flex flex-col justify-between pt-[100px]">
 
+              {/* HEADER */}
+              <Header />
+             
+
+              {/* КАТЕГОРИИ – ВСЕГДА видны! */}
+              
+
+              {/* СТРАНИЦЫ */}
+              <div>{children}</div>
+
+              {/* FOOTER */}
+              <Footer />
+
+              <Toaster position="top-right" reverseOrder={false} />
+            </main>
+          </CartProvider>
+        </LanguageProvider>
+      </body>
+    </html>
   );
 }

@@ -12,15 +12,16 @@ import { useLanguage } from '@/context/LanguageContext';
 import CartDrawer from '../cart/CartDrawer';
 import { useCart } from '@/context/CartContext';
 
+
 export function Header() {
   const [city, setCity] = useState<string | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [openCart, setOpenCart] = useState(false);
+  const [authOpen, setAuthOpen] = useState(false); // 🔥 NEW
 
   const { language, setLanguage, t } = useLanguage();
   const { cart } = useCart();
   const count = cart.reduce((sum, item) => sum + item.qty, 0);
-
 
   useEffect(() => {
     const savedCity = localStorage.getItem('selectedCity');
@@ -41,7 +42,6 @@ export function Header() {
 
       <div className="container mx-auto flex items-center justify-between py-0 px-6">
 
-
         <Link href="/" className="flex items-center gap-3">
           <Image src="/logo.png" alt="Logo" width={100} height={80} />
           <h1 className="text-2xl font-extrabold text-[#860120] tracking-wide">
@@ -50,14 +50,15 @@ export function Header() {
         </Link>
 
         <nav className="hidden md:flex items-center gap-10 text-[#4b2e16] font-medium text-[15px]">
-          <Link href="/">{t('menu')}</Link>
+          <Link href="/category/cakes">{t('menu')}</Link>
           <Link href="/about">{t('about')}</Link>
           <Link href="/contacts">{t('contacts')}</Link>
-          <Link href="/franchise">{t('franchise')}</Link>
+          <Link href="/certificate">{t('certificate')}</Link>
         </nav>
 
         <div className="flex items-center gap-5">
-          {/* Язык */}
+
+          {/* Language */}
           <div className="flex items-center gap-2">
             <button
               onClick={() => setLanguage('ru')}
@@ -74,7 +75,7 @@ export function Header() {
             </button>
           </div>
 
-          {/* Город */}
+          {/* City */}
           <button
             onClick={() => setModalOpen(true)}
             className="flex items-center gap-2 text-[#860120]"
@@ -83,17 +84,17 @@ export function Header() {
             <span>{city || t('chooseCity')}</span>
           </button>
 
-          {/* Профиль и корзина */}
+          {/* Profile + Cart */}
+          {/* Profile + Cart */}
           <div className="flex items-center gap-4">
-            <ProfileButton onClickSignIn={() => {}} />
-
-            {/* Открытие корзины */}
+            <ProfileButton />           {/* ⬅️ БЕЗ Link вокруг */}
             <CartButton onClick={() => setOpenCart(true)} />
           </div>
+
         </div>
       </div>
 
-      {/* Модал города */}
+      {/* City Modal */}
       {modalOpen && (
         <CityModal
           open={modalOpen}
@@ -106,8 +107,10 @@ export function Header() {
         />
       )}
 
-      {/* Панель корзины */}
+      {/* Cart Drawer */}
       <CartDrawer open={openCart} onClose={() => setOpenCart(false)} />
+
+
     </header>
   );
 }

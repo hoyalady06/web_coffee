@@ -1,6 +1,7 @@
 'use client';
 
 import { useCart } from '@/context/CartContext';
+import { useRouter } from "next/navigation";
 
 interface CartDrawerProps {
   open: boolean;
@@ -9,7 +10,7 @@ interface CartDrawerProps {
 
 export default function CartDrawer({ open, onClose }: CartDrawerProps) {
   const { cart, changeQty, removeFromCart } = useCart();
-
+  const router = useRouter();
   if (!open) return null;
 
   // 👉 Итоговая сумма
@@ -120,9 +121,17 @@ export default function CartDrawer({ open, onClose }: CartDrawerProps) {
               <span>{total} ₸</span>
             </div>
 
-            <button className="w-full py-3 bg-[#860120] text-white font-semibold rounded-lg hover:bg-[#a61234] transition">
-              Оформить заказ
-            </button>
+<button
+  onClick={() => {
+    onClose();          // или setIsOpen(false);
+    router.push("/checkout");
+  }}
+  className="w-full bg-[#860120] hover:bg-[#a4022a] text-white py-3 rounded-xl text-lg"
+>
+  Оформить заказ
+</button>
+
+
           </div>
         )}
       </div>

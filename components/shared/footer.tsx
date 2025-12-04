@@ -22,7 +22,7 @@ export function Footer() {
             <Link href="/">{t('menu')}</Link>
             <Link href="/about">{t('about')}</Link>
             <Link href="/contacts">{t('contacts')}</Link>
-            <Link href="/franchise">{t('franchise')}</Link>
+            
             <Link href="/career">{t('career')}</Link>
             <Link href="/certificate">{t('certificate')}</Link>
           </nav>
