@@ -4,10 +4,10 @@ import Image from "next/image";
 
 export default function CertificatesPage() {
   return (
-    <div className="container mx-auto px-6 py-12">
+    <div className="container mx-auto px-6 py-12 ">
 
       {/* Заголовок */}
-      <h1 className="text-4xl font-bold mb-10">
+      <h1 className="text-4xl font-bold mb-10 text-[#860120]">
         Правила пользования сертификатом
       </h1>
 

@@ -11,9 +11,9 @@ export default function ContactsPage() {
   };
 
   return (
-    <main className="min-h-screen bg-[#fff9f5] text-[#4b2e16] py-16">
-      <div className="container mx-auto px-6 md:px-12">
-        <h1 className="text-4xl font-bold text-[#860120] mb-8">Контакты</h1>
+    <main className="min-h-screen bg-[#fff9f5] text-[#4b2e16]">
+      <div className="container mx-auto px-6 py-12">
+          <h1 className="text-4xl font-bold text-[#860120] mb-8">Контакты</h1>
 
         {/* ===== Города ===== */}
         <div className="space-y-4 mb-12">
@@ -21,14 +21,14 @@ export default function ContactsPage() {
           <div className="border border-[#e7d8d1] rounded-lg overflow-hidden">
             <button
               onClick={() => toggleCity('astana')}
-              className="w-full text-left px-6 py-4 flex justify-between items-center text-xl font-semibold bg-white hover:bg-[#fdf1ef] transition"
+              className="w-full text-left px-6 py-4 flex justify-between items-center text-xl font-semibold bg-white transition"
             >
               Астана
               <span>{openCity === 'astana' ? '−' : '+'}</span>
             </button>
 
             {openCity === 'astana' && (
-              <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6 p-6 bg-[#fffaf8]">
+              <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6 p-6 bg-white">
                 {[
                   {
                     address: 'ул. Кунаева, 14Г (ЖК “Нурсая”)',
@@ -63,14 +63,14 @@ export default function ContactsPage() {
           <div className="border border-[#e7d8d1] rounded-lg overflow-hidden">
             <button
               onClick={() => toggleCity('almaty')}
-              className="w-full text-left px-6 py-4 flex justify-between items-center text-xl font-semibold bg-white hover:bg-[#fdf1ef] transition"
+              className="w-full text-left px-6 py-4 flex justify-between items-center text-xl font-semibold bg-white transition"
             >
               Алматы
               <span>{openCity === 'almaty' ? '−' : '+'}</span>
             </button>
 
             {openCity === 'almaty' && (
-              <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6 p-6 bg-[#fffaf8]">
+              <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6 p-6 bg-white">
                 {[
                   {
                     address: 'ул. Розыбакиева, 247а (Mega Center Alma-Ata)',
