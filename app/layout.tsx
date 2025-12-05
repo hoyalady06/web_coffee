@@ -27,10 +27,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ru">
-      <body className={`${nunito.className} bg-[#fbf4ef]`}>
+      <body className={`${nunito.className} bg-white`}>
         <LanguageProvider>
           <CartProvider>
-            <main className="min-h-screen flex flex-col justify-between pt-[100px]">
+            <main className="min-h-screen flex flex-col justify-between pt-[40px]">
 
               {/* HEADER */}
               <Header />
@@ -40,7 +40,9 @@ export default function RootLayout({
               
 
               {/* СТРАНИЦЫ */}
-              <div>{children}</div>
+               <div className="pt-[40px]">
+    {children}
+  </div>
 
               {/* FOOTER */}
               <Footer />
