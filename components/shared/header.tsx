@@ -8,7 +8,7 @@ import { CartButton } from './cart-button';
 import { ProfileButton } from './profile-button';
 import { CityModal } from '@/components/shared/modals/CityModal';
 import { useLanguage } from '@/context/LanguageContext';
-
+import { SearchBar } from "components/shared/header/SearchBar";
 import CartDrawer from '../cart/CartDrawer';
 import { useCart } from '@/context/CartContext';
 
@@ -57,6 +57,9 @@ export function Header() {
         </nav>
 
         <div className="flex items-center gap-5">
+          <div className="hidden md:block">
+            <SearchBar />
+          </div>
 
           {/* Language */}
           <div className="flex items-center gap-2">
