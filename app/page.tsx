@@ -10,7 +10,7 @@ export default function HomePage() {
   const [category, setCategory] = useState<Category>("cakes");
 
   return (
-<main className="w-full bg-[#fff9f5]">
+<main className="w-full ">
 
   <Slider />
 
