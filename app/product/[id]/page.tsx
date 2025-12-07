@@ -27,16 +27,14 @@ export default function ProductPage({
   }
 
   return (
-   <div className="container mx-auto px-6 pt-6 pb-10">
+   <div className="container mx-auto px-6 pt-20 pb-10">
 
 <button
   onClick={() => {
-    if (from === "catalog") {
-      router.push("/catalog");
-    } else if (document.referrer && !document.referrer.includes("localhost:3000")) {
-      router.back();
+    if (window.history.length > 1) {
+      router.back();    // Вернуться НАСТОЯЩИМ образом назад
     } else {
-      router.push("/");
+      router.push("/"); // А если истории нет — на главную
     }
   }}
   className="inline-flex items-center gap-2 text-lg text-[#4b2e16] hover:text-[#860120] transition mb-6"
@@ -44,6 +42,7 @@ export default function ProductPage({
   <span className="text-2xl">←</span>
   Назад
 </button>
+
 
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
