@@ -1,22 +1,24 @@
 'use client';
 
-import { useState } from "react";
+
 import { Slider } from "@/components/shared/slider/Slider";
-import { CategoryTabs } from "@/components/catalog/CategoryTabs";
-import { ProductsSection } from "@/components/products/ProductsSection";
-import type { Category } from "@/data/products";
+
+import { RecommendedProducts } from "@/components/products/RecommendedProducts";
 
 export default function HomePage() {
-  const [category, setCategory] = useState<Category>("cakes");
-
   return (
-<main className="w-full ">
+    <main className="w-full pt-10">
+      {/* Слайдер */}
+      <Slider />
 
-  <Slider />
+      {/* Рекомендуемые товары */}
+      <div className="container mx-auto px-6 mt-14 mb-20">
+        <h2 className="text-3xl font-bold text-[#4b2e16] mb-6">
+           
+        </h2>
 
-
-
-</main>
-
+        <RecommendedProducts />
+      </div>
+    </main>
   );
 }
