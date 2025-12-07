@@ -41,8 +41,8 @@ export default function RootLayout({
 
               {/* СТРАНИЦЫ */}
                <div className="pt-[40px]">
-    {children}
-  </div>
+                {children}
+              </div>
 
               {/* FOOTER */}
               <Footer />
