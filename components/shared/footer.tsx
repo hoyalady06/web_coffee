@@ -19,7 +19,7 @@ export function Footer() {
           </Link>
 
           <nav className="flex flex-wrap justify-center md:justify-start gap-6 font-medium text-[#4b2e16]">
-            <Link href="/">{t('menu')}</Link>
+            <Link href="/category/cakes">{t('menu')}</Link>
             <Link href="/about">{t('about')}</Link>
             <Link href="/contacts">{t('contacts')}</Link>
             
