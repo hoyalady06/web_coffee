@@ -11,7 +11,7 @@ const menu = [
     items: [
       { href: "/profile", label: "Личная информация" },
       { href: "/profile/payments", label: "Способы оплаты" },
-      { href: "/profile/balance", label: "Баланс средств" },
+      
       { href: "/profile/bonus", label: "Баллы и бонусы" },
     ],
   },
@@ -19,7 +19,7 @@ const menu = [
   {
     title: "Заказы",
     items: [
-      { href: "/profile/cart", label: "Моя корзина" },
+      
       { href: "/profile/orders", label: "Мои заказы" },
       { href: "/profile/returns", label: "Мои возвраты" },
       { href: "/profile/bought", label: "Купленные товары" },
@@ -51,11 +51,11 @@ export function ProfileSidebar() {
 
       {/* Avatar + Имя */}
       <div className="flex flex-col items-center">
-        <div className="w-20 h-20 rounded-full bg-[#f3f6ff] flex items-center justify-center text-3xl text-[#4b2e16] font-bold">
+        <div className="w-20 h-20 rounded-full bg-[#860120] flex items-center justify-center text-3xl text-[#ffffff] font-bold">
           {initials}
         </div>
 
-        <h3 className="mt-3 text-xl font-semibold text-[#4b2e16]">
+        <h3 className="mt-3 text-xl font-semibold text-[#860120]">
           {user?.name || "Пользователь"}
         </h3>
       </div>
@@ -64,7 +64,7 @@ export function ProfileSidebar() {
       <div className="mt-8 space-y-8">
         {menu.map((group, i) => (
           <div key={i}>
-            <p className="text-sm font-semibold text-[#4b2e16]">
+            <p className="text-sm font-semibold text-[#860120]">
               {group.title}
             </p>
 
@@ -79,7 +79,7 @@ export function ProfileSidebar() {
                     className={clsx(
                       "block rounded-xl px-4 py-2 text-[15px] transition",
                       active
-                        ? "bg-[#FBEAEA] text-[#C14E4E] font-semibold"
+                        ? "bg-[#fff9f5] text-[#860120] font-semibold"
                         : "text-[#3a3a3a] hover:bg-[#f6f6f6]"
                     )}
                   >
