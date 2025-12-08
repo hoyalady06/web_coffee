@@ -2,7 +2,7 @@ import Image from 'next/image';
 
 export default function AboutPage() {
   return (
-    <main className="min-h-screen bg-[#fff9f5] text-[#4b2e16] py-16">
+    <main className="min-h-screen bg-[#FFFAF9] text-[#4b2e16] py-16">
       <div className="container mx-auto px-6 md:px-12">
         {/* 🌸 Вступление */}
         <div className="flex flex-col md:flex-row items-center gap-10 mb-20">

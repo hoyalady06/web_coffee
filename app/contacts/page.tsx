@@ -11,7 +11,7 @@ export default function ContactsPage() {
   };
 
   return (
-    <main className="min-h-screen bg-[#fff9f5] text-[#4b2e16]">
+    <main className="min-h-screen bg-[#FFFAF9] text-[#4b2e16]">
       <div className="container mx-auto px-6 py-12">
           <h1 className="text-4xl font-bold text-[#860120] mb-8">Контакты</h1>
 
