@@ -1,6 +1,7 @@
 "use client";
 
 import { allProducts } from "@/data/products";
+
 import { useParams, useRouter } from "next/navigation";
 import { CategoryTabs } from "@/components/catalog/CategoryTabs";
 import { useState, useEffect } from "react";
@@ -15,7 +16,8 @@ const categoryNames = {
   cookies:   "Наше печенье",
   icecream:  "Наше мороженое",
   combo:     "Наше комбо меню",
-  cafe:      "Наше кафе"
+  cafe:      "Наше кафе",
+  hidden:    "Сертификаты"
 };
 
 
@@ -30,7 +32,9 @@ export default function CategoryPage() {
     setActive(currentCategory);
   }, [currentCategory]);
 
-  const filtered = allProducts.filter((p) => p.category === currentCategory);
+  const filtered = allProducts.filter(
+  (p) => p.category === currentCategory && p.category !== "hidden"
+);
 
   return (
     <main className="w-full   pb-20">
