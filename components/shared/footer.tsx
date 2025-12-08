@@ -9,7 +9,7 @@ export function Footer() {
   const { t } = useLanguage();
 
   return (
-    <footer className="bg-[#fff9f5] border-t border-[#f1e2da] text-[#4b2e16]">
+    <footer className="bg-[#FFFAF9] border-t border-[#f1e2da] text-[#4b2e16]">
       <div className="container mx-auto px-6 py-8 flex flex-col md:flex-row justify-between items-center gap-8">
         {/* 🔹 Логотип и навигация */}
         <div className="flex flex-col md:flex-row md:items-center gap-6 text-center md:text-left">
