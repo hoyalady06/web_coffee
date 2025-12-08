@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { MapPin } from 'lucide-react';
+import { Heart, MapPin } from 'lucide-react';
 import { CartButton } from './cart-button';
 import { ProfileButton } from './profile-button';
 import { CityModal } from '@/components/shared/modals/CityModal';
@@ -38,9 +38,9 @@ export function Header() {
   }, []);
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 border-b bg-[#fff9f5] shadow-md">
+    <header className="fixed top-0 left-0 right-0 z-50 border-b bg-[#FFFAF9] shadow-md">
 
-      <div className="container mx-auto flex items-center justify-between py-0 px-6">
+      <div className="container mx-auto flex items-center justify-between py-0 px-0">
 
         <Link href="/" className="flex items-center gap-3">
           <Image src="/logo.png" alt="Logo" width={100} height={80} />
@@ -49,20 +49,20 @@ export function Header() {
           </h1>
         </Link>
 
-        <nav className="hidden md:flex items-center gap-10 text-[#4b2e16] font-medium text-[15px]">
+        <nav className="hidden md:flex items-center gap-5 text-[#4b2e16] font-semibold text-[15px]">
           <Link href="/category/cakes">{t('menu')}</Link>
           <Link href="/about">{t('about')}</Link>
           <Link href="/contacts">{t('contacts')}</Link>
           <Link href="/certificate">{t('certificate')}</Link>
         </nav>
 
-        <div className="flex items-center gap-5">
+        <div className="flex items-center gap-4">
           <div className="hidden md:block">
             <SearchBar />
           </div>
 
           {/* Language */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 font-semibold" >
             <button
               onClick={() => setLanguage('ru')}
               className={language === 'ru' ? 'text-[#860120]' : 'text-[#4b2e16]'}
@@ -81,7 +81,7 @@ export function Header() {
           {/* City */}
           <button
             onClick={() => setModalOpen(true)}
-            className="flex items-center gap-2 text-[#860120]"
+            className="flex items-center gap-2 text-[#860120] font-semibold"
           >
             <MapPin size={18} />
             <span>{city || t('chooseCity')}</span>
@@ -90,6 +90,9 @@ export function Header() {
           {/* Profile + Cart */}
           {/* Profile + Cart */}
           <div className="flex items-center gap-4">
+             <Link href="/favorites">
+              <Heart size={22} className="text-[#4b2e16] hover:text-[#860120]" />
+            </Link>
             <ProfileButton />           {/* ⬅️ БЕЗ Link вокруг */}
             <CartButton onClick={() => setOpenCart(true)} />
           </div>
