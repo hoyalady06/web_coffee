@@ -36,7 +36,7 @@ export default function ProfilePage() {
         <>
           <h2 className="text-3xl font-bold text-[#4b2e16] mb-8">Учётные данные</h2>
 
-          <div className="bg-[#fff9f5] border border-[#e3e7ff] rounded-xl p-4 mb-8 flex items-center gap-3">
+          <div className="bg-[#FFFAF9] border border-[#e3e7ff] rounded-xl p-4 mb-8 flex items-center gap-3">
             <AlertTriangle className="text-[#860120]" size={22} />
             <p className="text-[#860120] text-[15px] font-medium">
               Укажите недостающие данные, чтобы защитить свой аккаунт

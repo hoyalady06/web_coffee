@@ -10,7 +10,7 @@ export default function BonusesPage() {
       </h1>
 
       {/* Баллы */}
-      <div className="bg-[#fff9f5] border border-[#eadfd7] rounded-2xl p-6 shadow-sm">
+      <div className="bg-[#FFFAF9] border border-[#eadfd7] rounded-2xl p-6 shadow-sm">
 
         <p className="text-[#4b2e16] text-xl font-semibold mb-3">
           Ваши баллы
@@ -27,7 +27,7 @@ export default function BonusesPage() {
 
 
       {/* История */}
-      <div className="bg-[#fff9f5] border border-[#eadfd7] rounded-2xl p-6 shadow-sm">
+      <div className="bg-[#FFFAF9] border border-[#eadfd7] rounded-2xl p-6 shadow-sm">
         <p className="text-xl font-semibold text-[#4b2e16] mb-3">
           История
         </p>
@@ -39,7 +39,7 @@ export default function BonusesPage() {
 
 
       {/* Частые вопросы */}
-      <div className="bg-[#fff9f5] border border-[#eadfd7] rounded-2xl p-6 shadow-sm space-y-6">
+      <div className="bg-[#FFFAF9] border border-[#eadfd7] rounded-2xl p-6 shadow-sm space-y-6">
 
         <p className="text-xl font-semibold text-[#4b2e16]">
           Частые вопросы

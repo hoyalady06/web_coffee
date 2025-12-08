@@ -8,7 +8,7 @@ export default function ProfileLayout({ children }: { children: React.ReactNode 
       <ProfileSidebar />
 
       <div className="flex-1">
-        <div className="bg-white rounded-2xl border border-[#eadfd7] shadow-sm p-10 min-h-[600px]">
+        <div className="bg-white rounded-2xl border border-[#FFFAF9] shadow-sm p-10 min-h-[600px]">
           {children}
         </div>
       </div>
