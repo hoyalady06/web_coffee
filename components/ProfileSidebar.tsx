@@ -79,7 +79,7 @@ export function ProfileSidebar() {
                     className={clsx(
                       "block rounded-xl px-4 py-2 text-[15px] transition",
                       active
-                        ? "bg-[#fff9f5] text-[#860120] font-semibold"
+                        ? "bg-[#FFFAF9] text-[#860120] font-semibold"
                         : "text-[#3a3a3a] hover:bg-[#f6f6f6]"
                     )}
                   >
