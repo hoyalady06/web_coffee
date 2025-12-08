@@ -8,7 +8,7 @@ import { Footer } from '@/components/shared/footer';
 import { CartProvider } from "@/context/CartContext";
 import { CategoryTabs } from "@/components/catalog/CategoryTabs";
 import { Slider } from "@/components/shared/slider/Slider";
-
+import { FavoritesProvider } from "@/context/FavoritesContext";
 const nunito = Nunito({
   subsets: ["cyrillic"],
   variable: "--font-nunito",
@@ -29,17 +29,17 @@ export default function RootLayout({
     <html lang="ru">
       <body className={`${nunito.className} bg-white`}>
         <LanguageProvider>
+          <FavoritesProvider>   
           <CartProvider>
             <main className="min-h-screen flex flex-col justify-between pt-[40px]">
 
               {/* HEADER */}
               <Header />
-             
 
-              {/* КАТЕГОРИИ – ВСЕГДА видны! */}
               
 
               {/* СТРАНИЦЫ */}
+              
                <div className="pt-[40px]">
                 {children}
               </div>
@@ -49,7 +49,8 @@ export default function RootLayout({
 
               <Toaster position="top-right" reverseOrder={false} />
             </main>
-          </CartProvider>
+            </CartProvider>
+          </FavoritesProvider>
         </LanguageProvider>
       </body>
     </html>
