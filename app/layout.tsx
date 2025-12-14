@@ -9,6 +9,7 @@ import { CartProvider } from "@/context/CartContext";
 import { CategoryTabs } from "@/components/catalog/CategoryTabs";
 import { Slider } from "@/components/shared/slider/Slider";
 import { FavoritesProvider } from "@/context/FavoritesContext";
+import { UserProvider } from "@/context/UserContext";
 const nunito = Nunito({
   subsets: ["cyrillic"],
   variable: "--font-nunito",
@@ -28,6 +29,7 @@ export default function RootLayout({
   return (
     <html lang="ru">
       <body className={`${nunito.className} bg-white`}>
+        <UserProvider>
         <LanguageProvider>
           <FavoritesProvider>   
           <CartProvider>
@@ -52,6 +54,7 @@ export default function RootLayout({
             </CartProvider>
           </FavoritesProvider>
         </LanguageProvider>
+        </UserProvider>
       </body>
     </html>
   );
