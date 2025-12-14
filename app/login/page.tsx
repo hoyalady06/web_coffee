@@ -6,7 +6,7 @@ export default function LoginPage() {
   const [phone, setPhone] = useState("");
   const [error, setError] = useState("");
 
-  // Маска телефона вручную
+  // Маска телефона
   const formatPhone = (v: string) => {
     v = v.replace(/\D/g, "").slice(0, 11);
 
@@ -22,33 +22,49 @@ export default function LoginPage() {
     );
   };
 
-  const handleSubmit = () => {
-    if (phone.length < 11) {
+  const handleSubmit = async () => {
+    setError("");
+
+    if (phone.replace(/\D/g, "").length !== 11)
+{
       setError("Введите корректный номер телефона");
       return;
     }
 
-    // Генерируем код (имитация)
-    const code = Math.floor(1000 + Math.random() * 9000);
-    localStorage.setItem("authCode", code.toString());
-    localStorage.setItem("phoneTemp", phone);
+    const cleaned = phone.replace(/\D/g, "");
+    const fullPhone = "+7" + cleaned.slice(1);
 
-    alert(`Код отправлен (имитация): ${code}`);
+    try {
+      const res = await fetch("/api/send-code", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone: fullPhone }),
+      });
 
-    window.location.href = "/login/code";
+      const data = await res.json();
+
+      if (!data.ok) {
+        setError("Ошибка отправки кода");
+        return;
+      }
+
+      alert("Ваш код: " + data.code); // имитация SMS
+
+      localStorage.setItem("phoneTemp", fullPhone);
+      window.location.href = "/login/code";
+    } catch (err) {
+      setError("Ошибка сети. Попробуйте позже.");
+    }
   };
 
   return (
     <div className="min-h-screen bg-[#fff9f5] flex justify-center items-center px-6">
       <div className="w-full max-w-md bg-white p-8 rounded-3xl shadow-lg border border-[#eadfd7]">
-
         <h1 className="text-3xl font-bold text-[#4b2e16] text-center mb-6">
           Вход по номеру<br /> телефона
         </h1>
 
-        <label className="block mb-2 text-[#4b2e16] font-medium">
-          Телефон
-        </label>
+        <label className="block mb-2 text-[#4b2e16] font-medium">Телефон</label>
 
         <input
           className="w-full px-4 py-3 rounded-xl border border-[#e3d6cd] bg-[#eef4ff]
