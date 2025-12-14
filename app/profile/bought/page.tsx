@@ -1,39 +1,120 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import Image from "next/image";
+import { useCart } from "@/context/CartContext";
+
 export default function BoughtPage() {
-  const items = [
-    {
-      id: 1,
-      title: "Торт Малинка",
-      date: "10.11.2024",
-      image: "/cake/strawberry.png"
-    }
-  ];
+  const { addToCart } = useCart();
+
+  const [items, setItems] = useState([]);
+  const [userId, setUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const id = localStorage.getItem("user_id");
+    setUserId(id);
+  }, []);
+
+  useEffect(() => {
+    if (userId) loadBoughtItems();
+  }, [userId]);
+
+  const loadBoughtItems = async () => {
+    const res = await fetch(`/api/orders/list?userId=${userId}`);
+    const data = await res.json();
+
+    if (!data.ok) return;
+
+    // берем только доставленные
+    const delivered = data.orders.filter((o: any) => o.status === "delivered");
+
+    // все товары
+    let allItems: any = delivered.flatMap((o: any) =>
+      o.items.map((it: any) => ({
+        id: it.product_id,
+        title: it.product_name,
+        image: it.image,
+        price: it.price,
+        date: o.created_at.slice(0, 10),
+      }))
+    );
+
+    // 🔥 ГРУППИРУЕМ ОДИНАКОВЫЕ ТОВАРЫ
+    const map = new Map();
+
+    allItems.forEach((item: any) => {
+      if (!map.has(item.id)) {
+        map.set(item.id, { ...item, count: 1 });
+      } else {
+        map.get(item.id).count++;
+      }
+    });
+
+    setItems([...map.values()]);
+  };
+
+  const buyAgain = (item: any) => {
+    addToCart({
+      id: item.id,
+      name: item.title,
+      price: item.price,
+      image: item.image,
+      qty: 1,
+    });
+
+    alert(`Товар "${item.title}" добавлен в корзину`);
+  };
 
   return (
-    <>
-      <h1 className="text-3xl font-bold text-[#4b2e16] mb-10">
-        Купленные товары
-      </h1>
+    <div>
+      <h1 className="text-3xl font-bold mb-8">Купленные товары</h1>
+
+      {items.length === 0 && (
+        <p className="text-gray-600">У вас пока нет купленных товаров</p>
+      )}
 
       <div className="space-y-6">
-        {items.map((item) => (
-          <div key={item.id}
-               className="flex gap-4 bg-[#fffff] p-6 rounded-2xl border border-[#eadfd7] shadow-sm">
+        {items.map((item: any) => (
+          <div
+            key={item.id}
+            className="relative border p-5 rounded-xl shadow-sm bg-white"
+          >
+            <div className="flex gap-4 items-center">
 
-            <img src={item.image} className="w-24 h-24 object-cover rounded-xl" />
+              {/* Фото */}
+              <Image
+                src={item.image}
+                alt={item.title}
+                width={70}
+                height={70}
+                className="rounded-xl border object-cover"
+              />
 
-            <div>
-              <p className="text-lg font-semibold text-[#4b2e16]">{item.title}</p>
-              <p className="text-[#7a5f4b] mt-2">Дата покупки: {item.date}</p>
+              <div>
+                {/* Название */}
+                <div className="text-xl font-semibold">{item.title}</div>
 
-              <button className="text-[#860120] underline mt-3">
-                Купить снова →
-              </button>
+                {/* Сколько раз покупали */}
+                <div className="text-gray-600 mt-1">
+                  Куплено: {item.count} раз(а)
+                </div>
+
+                {/* Последняя дата покупки */}
+                <div className="text-gray-500 text-sm">
+                  Последний раз: {item.date}
+                </div>
+              </div>
             </div>
+
+            <button
+              onClick={() => buyAgain(item)}
+              className="text-[#860120] underline mt-4 inline-block"
+            >
+              Купить снова →
+            </button>
           </div>
         ))}
       </div>
-    </>
+    </div>
   );
 }
