@@ -1,28 +1,39 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabaseClient";
 import { ProductCard } from "@/components/products/ProductCard";
-import { allProducts } from "@/data/products";
 
-export function RecommendedProducts() {
-  // Берём первые 6 товаров
-  const recommended = allProducts.slice(20, 36);
+export default function RecommendedMenu() {
+  const [items, setItems] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function load() {
+      const { data, error } = await supabase
+        .from("allproducts")
+        .select("*")
+        .range(100, 123)
+
+      if (!error && data) setItems(data);
+      setLoading(false);
+    }
+    load();
+  }, []);
+
+  if (loading) return <div className="p-6">Загрузка...</div>;
 
   return (
-    <section className="py-14 bg-white">
-      <div className="container mx-auto px-6 md:px-12">
+    <div>
+      <h2 className="text-3xl font-bold text-[#4b2e16] mb-6">
+        Рекомендуем вам
+      </h2>
 
-        <h2 className="text-3xl font-bold text-[#4b2e16] mb-10">
-         ⭐ Топ лучших продаже ⭐
-        </h2>
-
-        {/* Сетка товаров */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-8">
-          {recommended.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
-        </div>
-
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+        {items.map((product) => (
+          <ProductCard key={product.id} product={product} />
+        ))}
       </div>
-    </section>
+    </div>
   );
 }
