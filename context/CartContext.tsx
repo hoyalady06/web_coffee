@@ -9,7 +9,7 @@ export interface CartItem extends Product {
 
 interface CartContextValue {
   cart: CartItem[];
-  addToCart: (product: Product) => void;
+  addToCart: (product: Product, qty?: number) => void;
   removeFromCart: (id: number) => void;
   clearCart: () => void;
   changeQty: (id: number, qty: number) => void;
@@ -20,15 +20,19 @@ const CartContext = createContext<CartContextValue | undefined>(undefined);
 export function CartProvider({ children }: { children: ReactNode }) {
   const [cart, setCart] = useState<CartItem[]>([]);
 
-  const addToCart = (product: Product) => {
+  const addToCart = (product: Product, qty: number = 1) => {
     setCart((prev) => {
       const existing = prev.find((item) => item.id === product.id);
+
       if (existing) {
         return prev.map((item) =>
-          item.id === product.id ? { ...item, qty: item.qty + 1 } : item
+          item.id === product.id
+            ? { ...item, qty: item.qty + qty }
+            : item
         );
       }
-      return [...prev, { ...product, qty: 1 }];
+
+      return [...prev, { ...product, qty }];
     });
   };
 
@@ -37,7 +41,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
   };
 
   const clearCart = () => setCart([]);
-
 
   const changeQty = (id: number, qty: number) => {
     if (qty <= 0) {
@@ -48,7 +51,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       prev.map((item) => (item.id === id ? { ...item, qty } : item))
     );
   };
- 
+
   return (
     <CartContext.Provider
       value={{ cart, addToCart, removeFromCart, clearCart, changeQty }}
