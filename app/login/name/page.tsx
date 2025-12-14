@@ -1,32 +1,33 @@
 "use client";
 
 import { useState } from "react";
+import { supabase } from "@/lib/supabaseClient";
 import { useRouter } from "next/navigation";
 
 export default function NamePage() {
   const [name, setName] = useState("");
   const router = useRouter();
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const phone = localStorage.getItem("loginPhone");
+    const { data: session } = await supabase.auth.getUser();
+    const userId = session?.user?.id;
 
-    if (!phone) {
-      alert("Ошибка: нет номера телефона");
+    if (!userId) {
       router.push("/login");
       return;
     }
 
-    const user = {
-      name,
-      phone,
-    };
+    const { error } = await supabase
+      .from("users")
+      .update({ name })
+      .eq("id", userId);
 
-    // сохраняем пользователя
-    localStorage.setItem("authUser", JSON.stringify(user));
-
-    alert("Добро пожаловать, " + name + "!");
+    if (error) {
+      alert("Ошибка при сохранении");
+      return;
+    }
 
     router.push("/profile");
   };
@@ -34,7 +35,7 @@ export default function NamePage() {
   return (
     <div className="min-h-screen bg-[#fff9f5] flex justify-center items-center px-6">
       <div className="w-full max-w-md bg-white rounded-2xl shadow-lg p-8 border border-[#eadfd7]">
-
+        
         <h1 className="text-3xl font-bold text-[#4b2e16] text-center mb-6">
           Как вас зовут?
         </h1>
@@ -46,20 +47,19 @@ export default function NamePage() {
             required
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="w-full px-4 py-3 rounded-xl border border-[#e3d6cd] bg-[#fffaf7] 
+            className="w-full px-4 py-3 rounded-xl border border-[#e3d6cd] bg-[#fffaf7]
             focus:outline-none focus:ring-2 focus:ring-[#860120]"
             placeholder="Введите ваше имя"
           />
 
           <button
             type="submit"
-            className="w-full bg-[#860120] hover:bg-[#6b011a] text-white font-semibold py-3 rounded-xl transition"
+            className="w-full bg-[#860120] hover:bg-[#6b011a] text-white font-semibold py-3 rounded-xl"
           >
             Продолжить
           </button>
 
         </form>
-
       </div>
     </div>
   );
