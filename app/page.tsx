@@ -1,7 +1,9 @@
 "use client";
 
+import { Slider } from "@/components/shared/slider/Slider";
 import Image from "next/image";
 import Link from "next/link";
+import RecommendedProducts from "@/components/products/RecommendedProducts";
 
 export default function HomePage() {
   return (
@@ -10,7 +12,7 @@ export default function HomePage() {
       {/* HERO BLOCK */}
       <div className="w-full bg-[#FFFAF9] py-12">
         <div className="container mx-auto flex flex-col md:flex-row items-center justify-between">
-          
+
           <div>
             <h1 className="text-4xl font-bold text-[#860120] mb-4">
               Свежая выпечка каждый день
@@ -32,21 +34,26 @@ export default function HomePage() {
             width={450}
             height={350}
             alt="Cake Banner"
+            className="rounded-xl"
           />
         </div>
       </div>
 
       {/* BENEFITS */}
       <div className="container mx-auto mt-10 grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="p-6 rounded-xl shadow bg-white">
-          🚚 Бесплатная доставка от 10 000 ₸
-        </div>
-        <div className="p-6 rounded-xl shadow bg-white">
-          🎂 Свежие ингредиенты
-        </div>
-        <div className="p-6 rounded-xl shadow bg-white">
-          ❤️ Любимые рецепты
-        </div>
+        <div className="p-6 rounded-xl shadow bg-white">🚚 Бесплатная доставка от 10 000 ₸</div>
+        <div className="p-6 rounded-xl shadow bg-white">🎂 Свежие ингредиенты</div>
+        <div className="p-6 rounded-xl shadow bg-white">❤️ Любимые рецепты</div>
+      </div>
+
+      {/* SLIDER */}
+      <div className="container mx-auto mt-16">
+        <Slider />
+      </div>
+
+      {/* RECOMMENDED PRODUCTS */}
+      <div className="container mx-auto px-6 mt-14 mb-20">
+        <RecommendedProducts />
       </div>
     </div>
   );
