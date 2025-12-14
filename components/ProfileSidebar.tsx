@@ -11,15 +11,12 @@ const menu = [
     items: [
       { href: "/profile", label: "Личная информация" },
       { href: "/profile/payments", label: "Способы оплаты" },
-      
       { href: "/profile/bonus", label: "Баллы и бонусы" },
     ],
   },
-
   {
     title: "Заказы",
     items: [
-      
       { href: "/profile/orders", label: "Мои заказы" },
       { href: "/profile/returns", label: "Мои возвраты" },
       { href: "/profile/bought", label: "Купленные товары" },
@@ -29,29 +26,39 @@ const menu = [
 
 export function ProfileSidebar() {
   const pathname = usePathname();
-
   const [user, setUser] = useState<any>(null);
 
+  // 🔥 Загрузка пользователя с backend
   useEffect(() => {
-    const saved = localStorage.getItem("authUser");
-    if (saved) setUser(JSON.parse(saved));
+    const id = localStorage.getItem("user_id");
+
+    if (!id) return;
+
+    fetch(`/api/user?id=${id}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.ok) {
+          setUser(data.user);
+        }
+      })
+      .catch(() => {});
   }, []);
 
-  // Генерация инициалов: "Нурсая Шарипбай" → "НШ"
+  // 🔥 Инициалы из имени
   const initials = user?.name
     ? user.name
         .split(" ")
-        .map((word: string) => word[0])
+        .map((w: string) => w[0])
         .join("")
         .toUpperCase()
-    : "??";
+    : "?";
 
   return (
     <div className="bg-white rounded-2xl shadow-sm p-5">
 
-      {/* Avatar + Имя */}
+      {/* Avatar + Name */}
       <div className="flex flex-col items-center">
-        <div className="w-20 h-20 rounded-full bg-[#860120] flex items-center justify-center text-3xl text-[#ffffff] font-bold">
+        <div className="w-20 h-20 rounded-full bg-[#860120] flex items-center justify-center text-3xl text-white font-bold">
           {initials}
         </div>
 
