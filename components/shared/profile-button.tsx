@@ -1,75 +1,77 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
-import Link from "next/link";
+import { useState, useEffect, useRef } from "react";
 import { User, LogOut } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export function ProfileButton() {
-  const [authUser, setAuthUser] = useState<any>(null);
   const [open, setOpen] = useState(false);
+  const [loggedIn, setLoggedIn] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
 
-  const ref = useRef<HTMLDivElement>(null);
-
-  // Загружаем данные
   useEffect(() => {
-    const saved = localStorage.getItem("authUser");
-    if (saved) setAuthUser(JSON.parse(saved));
+    const checkAuth = () => {
+      const uid = localStorage.getItem("user_id");
+      setLoggedIn(!!uid);
+    };
+
+    checkAuth();
+    window.addEventListener("authChange", checkAuth);
+
+    return () => window.removeEventListener("authChange", checkAuth);
   }, []);
 
-  // Закрытие меню при клике вне
   useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) {
+    function handleClickOutside(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
         setOpen(false);
       }
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleLogout = () => {
-    localStorage.removeItem("authUser");
-    window.location.href = "/login";
+  const logout = () => {
+    localStorage.removeItem("user_id");
+    localStorage.removeItem("role");
+    window.dispatchEvent(new Event("authChange"));
+    router.push("/");
   };
 
-  // Если нет авторизации → кнопка "Войти"
-  if (!authUser) {
-    return (
-      <Link
-        href="/login"
-        className="flex items-center gap-2 text-[#4b2e16] cursor-pointer"
-      >
-        <User size={20} />
-        <span>Войти</span>
-      </Link>
-    );
-  }
+  const handleClick = () => {
+    if (!loggedIn) {
+      router.push("/login");   // 🔥 МІНЕ ОСЫ ЖЕР — ШЕШІМ
+      return;
+    }
+
+    setOpen(!open);
+  };
 
   return (
-    <div className="relative" ref={ref}>
-      {/* ❤️ Кнопка с именем */}
+    <div className="relative" ref={menuRef}>
       <button
-        onClick={() => setOpen(!open)}
-        className="flex items-center gap-2 text-[#4b2e16]"
+        onClick={handleClick}
+        className="flex items-center gap-1 text-[#4b2e16] hover:text-[#860120]"
       >
-        <User size={20} />
-        <span>{authUser.name}</span>  {/* ← Показываем имя */}
+        <User size={22} />
+        {!loggedIn && <span className="font-semibold">Войти</span>}
       </button>
 
-      {/* Выпадающее меню */}
-      {open && (
-        <div className="absolute right-0 mt-2 bg-white rounded-xl shadow-lg p-3 w-44 border border-gray-200 z-50 animate-fade">
+      {open && loggedIn && (
+        <div className="absolute right-0 mt-3 w-40 bg-white shadow-lg rounded-xl border py-2 z-50">
           <Link
             href="/profile"
-            className="flex items-center gap-2 px-2 py-2 hover:bg-gray-100 rounded-lg"
+            className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100"
           >
             <User size={18} />
             Профиль
           </Link>
 
           <button
-            onClick={handleLogout}
-            className="flex items-center gap-2 w-full px-2 py-2 hover:bg-gray-100 rounded-lg text-left"
+            onClick={logout}
+            className="flex items-center gap-2 px-4 py-2 w-full text-left hover:bg-gray-100"
           >
             <LogOut size={18} />
             Выход
