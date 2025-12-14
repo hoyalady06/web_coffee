@@ -1,84 +1,96 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function CodePage() {
   const [codeInput, setCodeInput] = useState(["", "", "", ""]);
   const [error, setError] = useState("");
   const [phone, setPhone] = useState("");
 
+  const router = useRouter();
+
   useEffect(() => {
     const saved = localStorage.getItem("phoneTemp");
-    if (!saved) window.location.href = "/login";
+    if (!saved) router.push("/login");
     else setPhone(saved);
   }, []);
 
   const handleInput = (value: string, index: number) => {
     if (!/^\d?$/.test(value)) return;
 
-    const newArr = [...codeInput];
-    newArr[index] = value;
-    setCodeInput(newArr);
+    const arr = [...codeInput];
+    arr[index] = value;
+    setCodeInput(arr);
 
-    // авто переход
     if (value && index < 3) {
-      const next = document.getElementById(`code-${index + 1}`);
-      next?.focus();
+      document.getElementById(`code-${index + 1}`)?.focus();
     }
 
-    if (newArr.join("").length === 4) validate(newArr.join(""));
+    if (arr.join("").length === 4) verify(arr.join(""));
   };
 
-  const validate = (entered: string) => {
-    const real = localStorage.getItem("authCode");
+  // -------------------------------
+  // 🔥 ПРОВЕРКА КОДА
+  // -------------------------------
+  const verify = async (entered: string) => {
+    setError("");
 
-    if (entered === real) {
-      localStorage.setItem("authUser", JSON.stringify({ phone }));
+    try {
+      const res = await fetch("/api/verify-code", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone, code: entered }),
+      });
+
+      const data = await res.json();
+
+      if (!data.ok) {
+        setError("Неверный код");
+        return;
+      }
+
+      // -------------------------------
+      // 🔥 Сохраняем user.id из ответа
+      // -------------------------------
+      localStorage.setItem("user_id", data.user.id);
+      localStorage.setItem("role", data.user.role || "user");
+
       localStorage.removeItem("phoneTemp");
 
-      window.location.href = "/profile";
-    } else {
-      setError("Неверный код");
+      router.push("/profile");
+    } catch {
+      setError("Ошибка сети");
     }
   };
 
   return (
-    <div className="min-h-screen bg-[#fff9f5] flex justify-center items-center px-6">
-      <div className="w-full max-w-md bg-white p-8 rounded-3xl shadow-lg border border-[#eadfd7]">
+    <div className="min-h-screen flex justify-center items-center px-6">
+      <div className="= p-8 rounded-3xl shadow-lg border border-[#eadfd7]">
 
         <h1 className="text-3xl font-bold text-[#4b2e16] text-center mb-4">
           Авторизация
         </h1>
 
         <p className="text-center text-[#4b2e16] mb-6">
-          Введите код, отправленный на номер<br />
-          <b className="text-lg">
-            {phone.replace(/(\d{1})(\d{3})(\d{3})(\d{2})(\d{2})/, "+7 ($2) $3-$4-$5")}
-          </b>
+          Введите код, отправленный на<br />
+          <b className="text-lg">{phone}</b>
         </p>
 
-        {/* Inputs */}
         <div className="flex justify-center gap-4 mb-4">
           {codeInput.map((v, i) => (
             <input
               key={i}
               id={`code-${i}`}
               maxLength={1}
-              className="w-14 h-14 text-center border rounded-xl text-2xl bg-[#eef4ff]"
               value={v}
+              className="w-14 h-14 text-center border rounded-xl text-2xl bg-[#eef4ff]"
               onChange={(e) => handleInput(e.target.value, i)}
             />
           ))}
         </div>
 
-        {error && <p className="text-red-500 text-center mb-2">{error}</p>}
-
-        <p
-          className="text-center text-[#860120] mt-4 underline cursor-pointer"
-          onClick={() => (window.location.href = "/login")}
-        >
-          Изменить номер телефона
-        </p>
+        {error && <p className="text-red-500 text-center">{error}</p>}
       </div>
     </div>
   );
