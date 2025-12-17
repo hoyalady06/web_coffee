@@ -52,6 +52,8 @@ export default function CheckoutPage() {
     if (!selectedCard) return alert("Выберите карту для оплаты");
     if (!isValidPhone) return alert("Введите корректный телефон");
 
+    const card = cards.find((c: any) => c.id === selectedCard); // ⭐ ВАЖНО
+
     const res = await fetch("/api/orders/create", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -61,7 +63,8 @@ export default function CheckoutPage() {
         total: totalPrice,
         phone,
         name,
-        payment_method: selectedCard,
+        payment_method: "card",
+        payment_last4: card?.card_last4 ?? null, // ⭐ ВОТ ОНО
         delivery_type: deliveryType,
       }),
     });
@@ -73,6 +76,7 @@ export default function CheckoutPage() {
     clearCart();
     window.location.href = "/checkout/success";
   };
+
 
   return (
     <div className="container mx-auto px-6 py-10">
