@@ -8,18 +8,18 @@ export default function ReturnsPage() {
   const [userId, setUserId] = useState<string | null>(null);
 
   // Перевод статусов
-  const statusLabels: any = {
-    pending: "В обработке",
-    approved: "Одобрено",
-    rejected: "Отклонено",
-  };
+const statusLabels: any = {
+  pending: "В обработке",
+  approved: "Одобрено",
+  rejected: "Отклонено",
+};
 
-  // Цвета как в "Мои заказы"
-  const statusColors: any = {
-    pending: "bg-yellow-100 text-yellow-700",
-    approved: "bg-green-100 text-green-700",
-    rejected: "bg-red-100 text-red-700",
-  };
+const statusColors: any = {
+  pending: "bg-yellow-100 text-yellow-700",
+  approved: "bg-green-100 text-green-700",
+  rejected: "bg-red-100 text-red-700",
+};
+
 
   useEffect(() => {
     const id = localStorage.getItem("user_id");
@@ -65,7 +65,7 @@ export default function ReturnsPage() {
               Возврат № {r.id.slice(0, 8)}
             </div>
 
-            {/* Фотографии товаров */}
+            {/* Мини-фотографии товаров */}
             {r.items && r.items.length > 0 && (
               <div className="flex gap-3 mt-4">
                 {r.items.slice(0, 3).map((item: any, idx: number) => (
@@ -87,10 +87,29 @@ export default function ReturnsPage() {
               </div>
             )}
 
+            {/* Цена */}
+
+            <div className="text-gray-800 font-medium mt-4">
+              Сумма:{" "}
+              {r.items?.reduce(
+                (sum: number, i: any) => sum + (i.price || 0) * (i.qty || 1),
+                0
+              )} ₸
+            </div>
+
+
+
             {/* Дата возврата */}
             <div className="text-gray-600 mt-3">
               Дата: {r.created_at.replace("T", " ").slice(0, 16)}
             </div>
+
+            {r.reason && (
+              <div className="text-gray-600 mt-2">
+                Причина: {r.reason}
+              </div>
+            )}
+
 
             {/* Подробнее */}
             <a
