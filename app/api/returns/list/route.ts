@@ -17,19 +17,14 @@ export async function GET(req: Request) {
       reason,
       status,
       created_at,
-      orders!inner (
-        user_id
-      ),
       order_items (
         qty,
         price,
-        products (
-          name,
-          image
-        )
+        product_name,
+        image
       )
     `)
-    .eq("orders.user_id", userId)
+    .eq("user_id", userId)
     .order("created_at", { ascending: false });
 
   if (error) {
@@ -37,18 +32,21 @@ export async function GET(req: Request) {
     return NextResponse.json({ ok: false, error });
   }
 
-  // 🔄 формат под frontend
   const formatted = data.map((r: any) => ({
     id: r.id,
     status: r.status,
     reason: r.reason,
     created_at: r.created_at,
-    items: r.order_items.map((i: any) => ({
-      qty: i.qty,
-      price: i.price,
-      product_name: i.products.name,
-      image: i.products.image,
-    })),
+    items: r.order_items
+      ? [
+          {
+            qty: r.order_items.qty,
+            price: r.order_items.price,
+            product_name: r.order_items.product_name,
+            image: r.order_items.image,
+          },
+        ]
+      : [],
   }));
 
   return NextResponse.json({
