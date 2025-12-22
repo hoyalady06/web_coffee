@@ -4,6 +4,8 @@ import { useCart } from "@/context/CartContext";
 import Image from "next/image";
 import { IMaskInput } from "react-imask";
 import { useEffect, useState } from "react";
+import { AddCardForm } from "@/components/payments/AddCardForm";
+
 
 export default function CheckoutPage() {
   const { cart, changeQty, removeFromCart, clearCart } = useCart();
@@ -16,6 +18,14 @@ export default function CheckoutPage() {
   const [name, setName] = useState("");
 
   const [userId, setUserId] = useState<string | null>(null);
+  const [address, setAddress] = useState("");
+  const [apartment, setApartment] = useState("");
+  const [entrance, setEntrance] = useState("");
+  const [intercom, setIntercom] = useState("");
+  const [floor, setFloor] = useState("");
+  const [deliveryDate, setDeliveryDate] = useState("");
+  const [deliveryTime, setDeliveryTime] = useState("");
+  const [comment, setComment] = useState("");
 
   useEffect(() => {
     const id = localStorage.getItem("user_id");
@@ -46,13 +56,30 @@ export default function CheckoutPage() {
   };
 
 
+    async function selectAsPrimary(cardId: string) {
+      setSelectedCard(cardId);
 
+      await fetch("/api/payment-methods/set-primary", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId,
+          cardId,
+        }),
+      });
+
+      loadCards(); // 🔥 перезагружаем и пересортировываем
+    }
   // === Отправка заказа ===
   const createOrder = async () => {
     if (!selectedCard) return alert("Выберите карту для оплаты");
     if (!isValidPhone) return alert("Введите корректный телефон");
 
-    const card = cards.find((c: any) => c.id === selectedCard); // ⭐ ВАЖНО
+    if (deliveryType === "delivery" && !address) {
+      return alert("Введите адрес доставки");
+    }
+
+    const card = cards.find((c) => c.id === selectedCard);
 
     const res = await fetch("/api/orders/create", {
       method: "POST",
@@ -61,21 +88,59 @@ export default function CheckoutPage() {
         user_id: userId,
         items: cart,
         total: totalPrice,
-        phone,
+
         name,
-        payment_method: "card",
-        payment_last4: card?.card_last4 ?? null, // ⭐ ВОТ ОНО
+        phone,
+
         delivery_type: deliveryType,
+        address,
+        apartment,
+        entrance,
+        intercom,
+        floor,
+        delivery_date: deliveryDate,
+        delivery_time: deliveryTime,
+        comment,
+
+        payment_method: "card",
+        payment_last4: card?.card_last4 ?? null,
       }),
     });
 
     const result = await res.json();
-
     if (!result.ok) return alert("Ошибка создания заказа");
 
     clearCart();
-    window.location.href = "/checkout/success";
+    window.location.href = `/checkout/success?order=${result.order_id}`;
   };
+
+    
+  const [showAddCard, setShowAddCard] = useState(false);
+  const [showCardList, setShowCardList] = useState(false);
+
+  const selected = cards.find((c) => c.id === selectedCard);
+  const others = cards.filter((c) => c.id !== selectedCard);
+  if (cart.length === 0) {
+    return (
+      <div className="container mx-auto px-6 py-20 text-center">
+        <h2 className="text-2xl font-semibold mb-2">
+          Корзина пуста
+        </h2>
+
+        <p className="text-gray-500 mb-6">
+          Воспользуйтесь поиском, чтобы найти всё, что нужно
+        </p>
+
+        <a
+          href="/"
+          className="inline-block bg-[#860120] text-white px-6 py-3 rounded-xl font-medium hover:bg-[#6e0119]"
+        >
+          Начать покупки
+        </a>
+      </div>
+    );
+  }
+
 
 
   return (
@@ -133,7 +198,8 @@ export default function CheckoutPage() {
         ))}
       </div>
 
-      {/* 🚚 Доставка */}
+
+
       <div className="flex gap-6 border-b mb-6 pb-2">
         <button
           className={
@@ -161,12 +227,46 @@ export default function CheckoutPage() {
       {/* 📍 Адрес */}
       {deliveryType === "delivery" && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
-          <input className="border rounded-lg p-3" placeholder="Улица и дом" />
-          <input className="border rounded-lg p-3" placeholder="Квартира" />
-          <input className="border rounded-lg p-3" placeholder="Подъезд" />
-          <input className="border rounded-lg p-3" placeholder="Домофон" />
+          <input
+             className="border rounded-lg p-3"
+              placeholder="Улица и дом"
+              value={address}
+              onChange={(e) => setAddress(e.target.value)}
+            />
+
+            <input
+              className="border rounded-lg p-3"
+              placeholder="Квартира"
+              value={apartment}
+              onChange={(e) => setApartment(e.target.value)}
+            />
+
+            <input
+              className="border rounded-lg p-3"
+              placeholder="Подъезд"
+              value={entrance}
+              onChange={(e) => setEntrance(e.target.value)}
+            />
+
+            <input
+              className="border rounded-lg p-3"
+              placeholder="Домофон"
+              value={intercom}
+              onChange={(e) => setIntercom(e.target.value)}
+            />
+
         </div>
+        
       )}
+      <textarea
+        className="border rounded-xl p-3 w-full mt-4"
+        placeholder="Комментарий для курьера"
+        rows={3}
+        value={comment}
+        onChange={(e) => setComment(e.target.value)}
+      />
+
+
 
       {/* 👤 Контакты */}
       <h2 className="text-2xl font-semibold mb-3">Контактная информация</h2>
@@ -177,7 +277,7 @@ export default function CheckoutPage() {
           placeholder="Ваше имя"
           value={name}
           onChange={(e) => setName(e.target.value)}
-        />
+    />
 
         <IMaskInput
           mask="+7 (000) 000-00-00"
@@ -187,72 +287,100 @@ export default function CheckoutPage() {
           placeholder="+7 (___) ___-__-__"
         />
       </div>
+      <h3 className="text-2xl font-semibold mb-3">Комментарий к заказу</h3>
+      <textarea
+        className="border rounded-lg p-3 w-full"
+        placeholder="Комментарий к заказу (например: без орехов, позвонить заранее)"
+        rows={3}
+      />
 
+
+     
       {/* 💳 КАРТЫ */}
-{/* 💳 КАРТЫ */}
-<h2 className="text-2xl font-semibold mb-4">Способ оплаты</h2>
+      <h2 className="text-2xl font-semibold mb-4">Способ оплаты</h2>
 
-<div className="space-y-4 mb-12">
+      <div className="flex gap-4 overflow-x-auto pb-3 mb-12">
 
-  {/* --- 1) ЕСЛИ НЕТ КАРТ --- */}
-  {cards.length === 0 && (
-    <button
-      onClick={() => (window.location.href = "/profile/payments/add-card")}
-      className="w-full border border-[#860120] text-[#860120] rounded-xl py-3 font-medium"
-    >
-      Привязать карту
-    </button>
-  )}
+        {/* 💳 Сохранённые карты */}
+        {cards.map((c) => (
+          <button
+            key={c.id}
+            onClick={() => selectAsPrimary(c.id)}
 
-  {/* --- 2) КАРТЫ ЕСТЬ --- */}
-  {cards.length > 0 && (
-    <>
-      {/* Карта тізімі */}
-      {cards.map((c) => (
-        <button
-          key={c.id}
-          onClick={() => setSelectedCard(c.id)}
-          className={`w-full flex justify-between items-center p-5 rounded-xl border transition ${
-            c.id === selectedCard
-              ? "border-[#860120] bg-[#fff4f6]"
-              : "border-gray-300 bg-white"
-          }`}
-        >
-          <div>
-            <p className="text-lg font-semibold">{c.brand} •••• {c.card_last4}</p>
-            <p className="text-sm text-gray-600">Действует до: {c.expiry}</p>
+            className={`min-w-[180px] rounded-xl border p-4 text-left transition
+              ${
+                selectedCard === c.id
+                  ? "border-[#860120] bg-[#fff4f6]"
+                  : "border-gray-300 bg-white"
+              }`}
+          >
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-medium">{c.brand}</span>
+              {selectedCard === c.id && (
+                <span className="w-3 h-3 rounded-full bg-[#860120]" />
+              )}
+            </div>
+
+            <p className="text-lg font-semibold">•••• {c.card_last4}</p>
+            <p className="text-xs text-gray-500">до {c.expiry}</p>
 
             {c.is_primary && (
-              <p className="text-sm text-[#860120] font-medium mt-1">
-                Основная карта
-              </p>
+              <p className="text-xs text-[#860120] mt-1">Основная</p>
             )}
+          </button>
+        ))}
+
+        {/* ➕ Новая карта */}
+        <button
+          onClick={() => setShowAddCard(true)}
+          className="min-w-[180px] rounded-xl border-2 border-dashed border-[#860120]
+                    flex flex-col items-center justify-center text-[#860120]
+                    hover:bg-[#fff4f6] transition"
+        >
+          <span className="text-3xl leading-none">＋</span>
+          <span className="text-sm mt-1">Новой картой</span>
+        </button>
+
+
+
+      {showAddCard && (
+      <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center">
+        <div className="bg-white rounded-2xl p-8 w-full max-w-md shadow-xl relative">
+
+          {/* ❌ закрыть */}
+          <button
+            onClick={() => setShowAddCard(false)}
+            className="absolute top-4 right-4 text-2xl text-gray-400 hover:text-black"
+          >
+            ×
+          </button>
+
+          {/* 🏷 Заголовок */}
+          <h2 className="text-2xl font-semibold mb-4">
+            Привязка банковской карты
+          </h2>
+
+          {/* ℹ️ Инфо */}
+          <div className="bg-[#fff4f6] border border-[#f3c1cc] text-sm rounded-xl p-4 mb-6 flex gap-3">
+            <span className="text-[#860120] font-bold">i</span>
+            <p>
+              Мы спишем и сразу вернём небольшую сумму для проверки карты.
+            </p>
           </div>
 
-          {/* кастомный radio */}
-          <span
-            className={`w-5 h-5 rounded-full border flex items-center justify-center ${
-              c.id === selectedCard ? "border-[#860120]" : "border-gray-400"
-            }`}
-          >
-            {c.id === selectedCard && (
-              <span className="w-3 h-3 bg-[#860120] rounded-full" />
-            )}
-          </span>
-        </button>
-      ))}
+          {/* 🧾 Форма */}
+          <AddCardForm
+            onSuccess={() => {
+              setShowAddCard(false);
+              loadCards();
+            }}
+          />
+        </div>
+      </div>
+    )}
 
-      {/* Қосымша жаңа карта қосу */}
-      <button
-        onClick={() => (window.location.href = "/profile/payments/add-card")}
-        className="w-full border border-[#860120] text-[#860120] rounded-xl py-3 font-medium"
-      >
-        + Привязать другую карту
-      </button>
-    </>
-  )}
 
-</div>
+    </div>
 
       {/* 🧾 Итог */}
       <div className="bg-white shadow p-6 rounded-xl max-w-md">
@@ -274,7 +402,11 @@ export default function CheckoutPage() {
         >
           Сделать заказ
         </button>
+
+        
       </div>
+      
     </div>
+    
   );
 }
