@@ -8,17 +8,17 @@ export async function POST(req: Request) {
   if (!userId || !cardId)
     return NextResponse.json({ ok: false, error: "Missing params" });
 
-  // Remove primary from all cards
-  await supabase
-    .from("payment_methods")
-    .update({ is_primary: false })
-    .eq("user_id", userId);
+ // 1. снять primary со всех карт
+await supabase
+  .from("payment_methods")
+  .update({ is_primary: false })
+  .eq("user_id", userId);
 
-  // Set primary
-  await supabase
-    .from("payment_methods")
-    .update({ is_primary: true })
-    .eq("id", cardId);
+// 2. поставить primary выбранной
+await supabase
+  .from("payment_methods")
+  .update({ is_primary: true })
+  .eq("id", cardId);
 
   return NextResponse.json({ ok: true });
 }
