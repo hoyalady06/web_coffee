@@ -4,15 +4,25 @@ import { supabase } from "@/lib/supabaseClient";
 export async function POST(req: Request) {
   const body = await req.json();
 
-  const { 
-    user_id, 
-    items, 
-    total, 
-    phone, 
-    name, 
-    payment_method, 
-    payment_last4,   // ⭐ ДОБАВИЛИ
-    delivery_type 
+  const {
+    user_id,
+    items,
+    total,
+    phone,
+    name,
+
+    payment_method,
+    payment_last4,
+
+    delivery_type,
+    address,
+    apartment,
+    entrance,
+    intercom,
+    floor,
+    delivery_date,
+    delivery_time,
+    comment,
   } = body;
 
   if (!items || items.length === 0) {
@@ -23,7 +33,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false, error: "incorrect_total" });
   }
 
-  // 1) создаем заказ
+  // 🧾 СОЗДАЁМ ЗАКАЗ (ВСЁ СОХРАНЯЕМ)
   const { data: order, error } = await supabase
     .from("orders")
     .insert({
@@ -31,16 +41,30 @@ export async function POST(req: Request) {
       name,
       phone,
       total,
+
+      delivery_type,
+      address,
+      apartment,
+      entrance,
+      intercom,
+      floor,
+      delivery_date,
+      delivery_time,
+      comment,
+
       payment_method,
-      payment_last4,   // ⭐ СОХРАНЯЕМ В БАЗУ
-      delivery_type
+      payment_last4,
     })
+
     .select()
     .single();
 
-  if (error) return NextResponse.json({ ok: false, error });
+  if (error) {
+    console.error("ORDER ERROR:", error);
+    return NextResponse.json({ ok: false, error });
+  }
 
-  // 2) сохраняем товары заказа
+  // 🛒 ТОВАРЫ ЗАКАЗА
   for (const item of items) {
     const { error: insertError } = await supabase
       .from("order_items")
