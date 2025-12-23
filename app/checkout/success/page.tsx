@@ -27,25 +27,34 @@ export default function SuccessPage() {
   }, []);
 
   return (
-    <div className="container mx-auto px-6 py-20 text-center">
-      <h1 className="text-4xl font-bold text-[#860120] mb-6">
-        Заказ успешно оформлен! 🎉
-      </h1>
+  <div className="min-h-[60vh] flex items-center justify-center">
+  <div className="container mx-auto px-6 text-center max-s">
 
-      <p className="text-lg text-gray-700 mb-4">
-        Номер вашего заказа:
-      </p>
+    {/* 🎉 Заголовок */}
+    <h1 className="text-4xl md:text-5xl font-bold text-[#860120] mb-4">
+      Заказ успешно оформлен! 🎉
+    </h1>
 
-      <p className="text-2xl font-semibold mb-10">
-        {orderId}
-      </p>
+    {/* 📝 Подзаголовок */}
+    <p className="text-lg md:text-xl text-gray-600 mb-10">
+      Можете отследить его в личном кабинете
+    </p>
 
-      <a
-        href="/profile/orders"
-        className="bg-[#860120] text-white px-8 py-4 rounded-xl text-lg hover:bg-[#a4022a] transition"
-      >
-        Перейти к заказам
-      </a>
-    </div>
+    {/* 🔴 Кнопка */}
+    <a
+      href="/profile/orders"
+      className="inline-flex items-center justify-center
+                 bg-[#860120] text-white
+                 px-10 py-4 rounded-2xl
+                 text-lg font-medium
+                 hover:bg-[#a4022a]
+                 transition shadow-md"
+    >
+      Перейти к заказам
+    </a>
+
+  </div>
+</div>
+
   );
 }
