@@ -20,6 +20,12 @@ export interface Product {
   image: string;
   category: Category;
   description?: string;
+
+  discount_percent?: number;
+  final_price?: number;
+
+  is_active?: boolean;
+  status?: 'active' | 'hidden' | 'out_of_stock' | 'archived';
 }
 
 export const allProducts: Product[] = [
