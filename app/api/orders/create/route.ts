@@ -8,8 +8,6 @@ export async function POST(req: Request) {
     user_id,
     items,
     total,
-    phone,
-    name,
 
     payment_method,
     payment_last4,
@@ -25,6 +23,10 @@ export async function POST(req: Request) {
     comment,
   } = body;
 
+  if (!user_id) {
+    return NextResponse.json({ ok: false, error: "no_user" });
+  }
+
   if (!items || items.length === 0) {
     return NextResponse.json({ ok: false, error: "empty_cart" });
   }
@@ -33,13 +35,24 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false, error: "incorrect_total" });
   }
 
-  // 🧾 СОЗДАЁМ ЗАКАЗ (ВСЁ СОХРАНЯЕМ)
+  // 🔹 БЕРЁМ КОНТАКТЫ ИЗ ПРОФИЛЯ
+  const { data: user, error: userError } = await supabase
+    .from("users")
+    .select("name, phone")
+    .eq("id", user_id)
+    .single();
+
+  if (userError || !user) {
+    return NextResponse.json({ ok: false, error: "user_not_found" });
+  }
+
+  // 🧾 СОЗДАЁМ ЗАКАЗ
   const { data: order, error } = await supabase
     .from("orders")
     .insert({
       user_id,
-      name,
-      phone,
+      name: user.name,
+      phone: user.phone,
       total,
 
       delivery_type,
@@ -55,7 +68,6 @@ export async function POST(req: Request) {
       payment_method,
       payment_last4,
     })
-
     .select()
     .single();
 
