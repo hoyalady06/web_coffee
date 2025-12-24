@@ -4,6 +4,7 @@ import { createContext, useContext, useState, ReactNode } from 'react';
 import type { Product } from '@/data/products';
 
 export interface CartItem extends Product {
+  product_name: string;
   qty: number;
 }
 
