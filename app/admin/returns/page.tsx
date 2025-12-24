@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 export default function AdminReturnsPage() {
   const [returns, setReturns] = useState<any[]>([]);
   const [date, setDate] = useState("");
+  const [loading, setLoading] = useState(true);
 
   const router = useRouter();
 
@@ -40,7 +41,9 @@ export default function AdminReturnsPage() {
 }, [date]);
 
 
-  async function load() {
+async function load() {
+  setLoading(true);
+
   let query = supabase
     .from("returns")
     .select(`
@@ -48,6 +51,8 @@ export default function AdminReturnsPage() {
       status,
       qty,
       created_at,
+      recipient_name,
+      recipient_phone,
       order_id,
       order_items (
         product_name,
@@ -71,7 +76,9 @@ export default function AdminReturnsPage() {
 
   const { data } = await query;
   setReturns(data || []);
+  setLoading(false);
 }
+
 
 
   function getFilteredReturns() {
@@ -154,9 +161,26 @@ export default function AdminReturnsPage() {
         ))}
       </div>
 
-      {returns.length === 0 && (
-        <p className="text-gray-600">Пока нет возвратов</p>
-      )}
+      {loading && (
+      <div className="h-[40vh] flex flex-col items-center justify-center">
+        <div className="text-5xl animate-pulse mb-3">🍰</div>
+
+        <p className="text-base text-[#4b2e16] font-medium">
+          Загружаем возвраты
+          <span className="inline-block ml-1 animate-bounce">.</span>
+          <span className="inline-block ml-1 animate-bounce [animation-delay:150ms]">.</span>
+          <span className="inline-block ml-1 animate-bounce [animation-delay:300ms]">.</span>
+        </p>
+
+        <p className="text-xs text-gray-500 mt-1">
+          Проверяем данные клиентов и заказов
+        </p>
+      </div>
+    )}
+    {!loading && returns.length === 0 && (
+      <p className="text-gray-600">Пока нет возвратов</p>
+    )}
+
 
       {/* 🔹 Список возвратов */}
       <div className="space-y-6">
