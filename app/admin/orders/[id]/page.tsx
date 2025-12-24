@@ -119,8 +119,21 @@ export default function AdminOrderDetailsPage() {
       {/* 👤 Клиент */}
       <div className="bg-white rounded-xl border p-5">
         <h2 className="text-xl font-semibold mb-3">Клиент</h2>
-        <p>Имя: <b>{user?.name || "—"}</b></p>
-        <p>Телефон: <b>{user?.phone || "—"}</b></p>
+        <p>
+          Имя:{" "}
+          <b>{order.recipient_name || user?.name || "—"}</b>
+        </p>
+        <p>
+          Телефон:{" "}
+          <b>{order.recipient_phone || user?.phone || "—"}</b>
+        </p>
+
+        {order.recipient_name && (
+          <p className="mt-2 text-sm text-[#860120]">
+            🎁 Доставка другому человеку
+          </p>
+        )}
+
       </div>
 
 
