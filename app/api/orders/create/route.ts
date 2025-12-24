@@ -21,6 +21,10 @@ export async function POST(req: Request) {
     delivery_date,
     delivery_time,
     comment,
+
+    // 🆕 Доставка другому человеку
+    recipient_name,
+    recipient_phone,
   } = body;
 
   if (!user_id) {
@@ -35,7 +39,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false, error: "incorrect_total" });
   }
 
-  // 🔹 БЕРЁМ КОНТАКТЫ ИЗ ПРОФИЛЯ
+  // 👤 берём профиль пользователя
   const { data: user, error: userError } = await supabase
     .from("users")
     .select("name, phone")
@@ -46,15 +50,22 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false, error: "user_not_found" });
   }
 
-  // 🧾 СОЗДАЁМ ЗАКАЗ
+  // ✅ кто получатель
+  const finalName = recipient_name || user.name;
+  const finalPhone = recipient_phone || user.phone;
+
+  // 🧾 создаём заказ
   const { data: order, error } = await supabase
     .from("orders")
     .insert({
       user_id,
-      name: user.name,
-      phone: user.phone,
-      total,
+      name: recipient_name ?? user.name,
+      phone: recipient_phone ?? user.phone,
 
+      recipient_name,
+      recipient_phone,
+
+      total,
       delivery_type,
       address,
       apartment,
@@ -68,6 +79,7 @@ export async function POST(req: Request) {
       payment_method,
       payment_last4,
     })
+
     .select()
     .single();
 
@@ -76,9 +88,9 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false, error });
   }
 
-  // 🛒 ТОВАРЫ ЗАКАЗА
+  // 🛒 товары заказа
   for (const item of items) {
-    const { error: insertError } = await supabase
+    const { error: itemError } = await supabase
       .from("order_items")
       .insert({
         order_id: order.id,
@@ -89,9 +101,9 @@ export async function POST(req: Request) {
         qty: item.qty,
       });
 
-    if (insertError) {
-      console.error("ITEM ERROR:", insertError);
-      return NextResponse.json({ ok: false, error: insertError });
+    if (itemError) {
+      console.error("ITEM ERROR:", itemError);
+      return NextResponse.json({ ok: false, error: itemError });
     }
   }
 
