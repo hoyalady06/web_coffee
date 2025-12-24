@@ -28,6 +28,11 @@ export default function CheckoutPage() {
   const [deliveryDate, setDeliveryDate] = useState("");
   const [deliveryTime, setDeliveryTime] = useState("");
   const [comment, setComment] = useState("");
+  const [isOtherRecipient, setIsOtherRecipient] = useState(false);
+  const [recipientName, setRecipientName] = useState("");
+  const [recipientPhone, setRecipientPhone] = useState("");
+  
+
     function getAvailableTimes(selectedDate: string) {
       if (!selectedDate) return [];
 
@@ -91,10 +96,15 @@ export default function CheckoutPage() {
 
  
   const totalPrice = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
-  const canSubmit =
+  const isRecipientValid =
+    !isOtherRecipient ||
+    (recipientName.trim() && recipientPhone.replace(/\D/g, "").length === 11);
 
+  const canSubmit =
     selectedCard &&
-    (deliveryType === "pickup" || deliveryTime);
+    (deliveryType === "pickup" || deliveryTime) &&
+    isRecipientValid;
+
 
   // === Загружаем карты ===
   const loadCards = async () => {
@@ -145,8 +155,6 @@ export default function CheckoutPage() {
         items: cart,
         total: totalPrice,
 
-     
-
         delivery_type: deliveryType,
         address,
         apartment,
@@ -157,9 +165,14 @@ export default function CheckoutPage() {
         delivery_time: deliveryTime,
         comment,
 
+        // ✅ ВАЖНО: получатель
+        recipient_name: isOtherRecipient ? recipientName : null,
+        recipient_phone: isOtherRecipient ? recipientPhone : null,
+
         payment_method: "card",
         payment_last4: card?.card_last4 ?? null,
       }),
+
     });
 
     const result = await res.json();
@@ -398,6 +411,36 @@ export default function CheckoutPage() {
       )}
 
 
+      {/* 🎁 Доставка другому человеку */}
+      <div className="mb-10">
+        <label className="flex items-center gap-3 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={isOtherRecipient}
+            onChange={(e) => setIsOtherRecipient(e.target.checked)}
+          />
+          <span className="font-medium">Доставка другому человеку</span>
+        </label>
+
+        {isOtherRecipient && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+            <input
+              className="border rounded-lg p-3"
+              placeholder="Имя получателя"
+              value={recipientName}
+              onChange={(e) => setRecipientName(e.target.value)}
+            />
+
+            <IMaskInput
+              mask="+7 (000) 000-00-00"
+              value={recipientPhone}
+              onAccept={(v: any) => setRecipientPhone(v)}
+              className="border rounded-lg p-3"
+              placeholder="Телефон получателя"
+            />
+          </div>
+        )}
+      </div>
 
 
 
