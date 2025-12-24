@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import { supabase } from "@/lib/supabaseClient";
+import { AdminShell } from "@/components/AdminShell";
 
 export default function AdminOrderDetailsPage() {
   const { id } = useParams();
@@ -73,6 +74,7 @@ export default function AdminOrderDetailsPage() {
   if (!order) return <div>Загрузка...</div>;
 
   return (
+    
     <div className="space-y-6">
       {/* 🔝 Header */}
       <div className="flex items-center justify-between">
@@ -232,5 +234,6 @@ export default function AdminOrderDetailsPage() {
         </div>
       </div>
     </div>
+    
   );
 }
