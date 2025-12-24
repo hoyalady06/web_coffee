@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import { supabase } from "@/lib/supabaseClient";
-import { AdminShell } from "@/components/AdminShell";
+
 
 export default function AdminOrderDetailsPage() {
   const { id } = useParams();
