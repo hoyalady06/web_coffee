@@ -5,77 +5,177 @@ import Image from "next/image";
 import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
 
+const categories = [
+  "all",
+  "cakes",
+  "pies",
+  "bread",
+  "bakery",
+  "desserts",
+  "cookies",
+  "icecream",
+  "combo",
+  "cafe",
+];
+
 export default function AdminProductsPage() {
   const [products, setProducts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // 🔎 фильтры
+  const [category, setCategory] = useState("all");
+  const [onlyDiscount, setOnlyDiscount] = useState(false);
+  const [status, setStatus] = useState("all");
+  const [search, setSearch] = useState("");
 
   useEffect(() => {
     loadProducts();
-  }, []);
+  }, [category, onlyDiscount, status, search]);
 
   async function loadProducts() {
-    const { data } = await supabase
-      .from("products")
-      .select("*")
-      .order("created_at", { ascending: false });
+    setLoading(true);
 
-    setProducts(data || []);
+    let query = supabase.from("allproducts").select("*");
+
+    if (category !== "all") {
+      query = query.eq("category", category);
+    }
+
+    if (onlyDiscount) {
+      query = query.gt("discount_percent", 0);
+    }
+
+    if (status !== "all") {
+      query = query.eq("status", status);
+    }
+
+    if (search.trim()) {
+      query = query.ilike("name", `%${search}%`);
+    }
+
+    const { data, error } = await query.order("created_at", {
+      ascending: false,
+    });
+
+    if (!error) setProducts(data || []);
+    else console.error(error);
+
+    setLoading(false);
   }
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Товары</h1>
+      <h1 className="text-2xl font-semibold">Товары</h1>
 
-        <Link
-          href="/admin/products/new"
-          className="bg-[#860120] text-white px-6 py-2 rounded-full hover:opacity-90 transition"
+      {/* 🔎 ФИЛЬТРЫ */}
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-4 bg-[#FFFAF9] p-4 rounded-2xl border border-[#FFFAG1]">
+
+        {/* Поиск */}
+        <input
+          placeholder="Поиск по названию"
+          className="border rounded-xl px-4 py-2 text-black"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+
+        {/* Категория */}
+        <select
+          className="border rounded-xl px-4 py-2"
+          value={category}
+          onChange={(e) => setCategory(e.target.value)}
         >
-          + Добавить товар
-        </Link>
+          {categories.map((c) => (
+            <option key={c} value={c}>
+              {c === "all" ? "Все категории" : c}
+            </option>
+          ))}
+        </select>
+
+        {/* Статус */}
+        <select
+          className="border rounded-xl px-4 py-2"
+          value={status}
+          onChange={(e) => setStatus(e.target.value)}
+        >
+          <option value="all">Все статусы</option>
+           <option value="active">🟢 Активен</option>
+          <option value="hidden">Скрыт</option>
+          <option value="out_of_stock">Нет в наличии</option>
+          <option value="archived">Архив</option>
+        </select>
+
+        {/* Скидки */}
+        <label className="flex items-center gap-2 text-sm">
+          <input
+            type="checkbox"
+            checked={onlyDiscount}
+            onChange={(e) => setOnlyDiscount(e.target.checked)}
+          />
+          Только со скидкой
+        </label>
       </div>
 
-      {/* List */}
-      <div className="space-y-4">
-        {products.map((product) => (
+      {/* 📦 СПИСОК */}
+      {loading && <p className="text-gray-500">Загрузка…</p>}
+
+      {!loading &&
+        products.map((p) => (
           <div
-            key={product.id}
-            className="border rounded-2xl p-5 flex items-center justify-between hover:bg-[#FFFAF9] transition"
+            key={p.id}
+            className="border rounded-2xl p-5 flex justify-between items-center hover:bg-[#FFFAF9]"
           >
-            <div className="flex items-center gap-4">
+            {/* Левая часть */}
+            <div className="flex gap-4 items-center">
               <Image
-                src={product.image || "/placeholder.png"}
-                alt={product.name}
+                src={p.image || "/placeholder.png"}
+                alt={p.name}
                 width={64}
                 height={64}
-                className="rounded-xl object-cover border"
+                className="rounded-xl border"
               />
 
               <div>
-                <p className="font-medium">{product.name}</p>
-                <p className="text-sm text-gray-500">
-                  {product.category || "Без категории"}
-                </p>
+                <p className="font-medium">{p.name}</p>
+                <p className="text-sm text-gray-500">{p.category}</p>
+
+                {p.discount_percent > 0 && (
+                  <p className="text-sm text-red-600">
+                    Скидка {p.discount_percent}%
+                  </p>
+                )}
+
+                {p.status === "archived" && (
+                  <p className="text-xs text-gray-400">Архив</p>
+                )}
               </div>
             </div>
 
+            {/* Правая часть */}
             <div className="flex items-center gap-6">
-              <p className="font-semibold">{product.price} ₸</p>
+              <div className="text-right">
+                {p.discount_percent > 0 ? (
+                  <>
+                    <p className="line-through text-gray-400 text-sm">
+                      {p.price} ₸
+                    </p>
+                    <p className="font-semibold text-red-600">
+                      {p.final_price} ₸
+                    </p>
+                  </>
+                ) : (
+                  <p className="font-semibold">{p.price} ₸</p>
+                )}
+              </div>
 
               <Link
-                href={`/admin/products/${product.id}`}
-                className="text-[#860120] hover:underline text-sm"
+                href={`/admin/products/${p.id}`}
+                className="text-[#860120] text-sm underline"
               >
-                Редактировать
+                ✏️ Редактировать
               </Link>
             </div>
           </div>
         ))}
-      </div>
-
-      {products.length === 0 && (
-        <p className="text-gray-500">Товаров пока нет</p>
-      )}
     </div>
   );
 }
