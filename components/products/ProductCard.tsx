@@ -24,9 +24,21 @@ export function ProductCard({ product }: ProductCardProps) {
     setQty(item ? item.qty : 0);
   }, [cart]);
 
+  // 🔥 СНАЧАЛА СЧИТАЕМ ЦЕНУ
+  const discount = product.discount_percent ?? 0;
+  const hasDiscount = discount > 0;
+
+  const finalPrice = hasDiscount
+    ? product.final_price ?? Math.round(product.price * (1 - discount / 100))
+    : product.price;
+
+  // ✅ ПОТОМ ИСПОЛЬЗУЕМ
   const handleAdd = () => {
-    addToCart(product);
-    toast.success(`"${product.name}" добавлен в корзину!`);
+    addToCart({
+      ...product,
+      price: finalPrice, // 🔥 В КОРЗИНУ ИДЁТ ЦЕНА СО СКИДКОЙ
+    });
+    toast.success(`"${product.name}" добавлен в корзину`);
   };
 
   const handlePlus = () => changeQty(product.id, qty + 1);
@@ -35,6 +47,13 @@ export function ProductCard({ product }: ProductCardProps) {
 
   return (
     <div className="relative bg-white rounded-xl border overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300">
+
+      {/* 🔴 БЕЙДЖ СКИДКИ */}
+      {hasDiscount && (
+        <div className="absolute top-3 left-3 z-20 bg-red-600 text-white text-xs font-semibold px-2 py-1 rounded-full">
+          −{discount}%
+        </div>
+      )}
 
       {/* ❤️ СЕРДЕЧКО */}
       <button
@@ -68,18 +87,31 @@ export function ProductCard({ product }: ProductCardProps) {
 
       {/* НИЖНИЙ БЛОК */}
       <div className="px-4 py-4">
-
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-[16px] font-medium text-[#4b2e16] truncate max-w-[70%]">
             {product.name}
           </h3>
 
-          <span className="text-[#860120] font-bold text-[16px] whitespace-nowrap">
-            {product.price.toLocaleString('ru-RU')} ₸
-          </span>
+          {/* 💰 ЦЕНА */}
+          <div className="text-right whitespace-nowrap">
+            {hasDiscount ? (
+              <>
+                <div className="text-sm text-gray-400 line-through">
+                  {product.price.toLocaleString('ru-RU')} ₸
+                </div>
+                <div className="text-[#860120] font-bold text-[16px]">
+                  {finalPrice.toLocaleString('ru-RU')} ₸
+                </div>
+              </>
+            ) : (
+              <span className="text-[#860120] font-bold text-[16px]">
+                {product.price.toLocaleString('ru-RU')} ₸
+              </span>
+            )}
+          </div>
         </div>
 
-        {/* КНОПКА / СЧЁТЧИК */}
+        {/* 🛒 */}
         {qty === 0 ? (
           <button
             onClick={handleAdd}
