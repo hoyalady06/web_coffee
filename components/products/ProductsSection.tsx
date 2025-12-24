@@ -1,35 +1,84 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import type { Product, Category } from '@/data/products';
 import { ProductCard } from './ProductCard';
-import { allProducts } from '@/data/products';
+import { supabase } from '@/lib/supabaseClient';
 
-interface ProductsSectionProps {
+interface Props {
   category: Category;
 }
 
-export function ProductsSection({ category }: ProductsSectionProps) {
+export function ProductsSection({ category }: Props) {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const filtered = allProducts.filter((p) => p.category === category);
+  async function loadProducts() {
+    const { data, error } = await supabase
+      .from('allproducts')
+      .select('*')
+      .eq('category', category)
+      .eq('is_active', true)
+      .neq('status', 'archived');
+
+    if (!error) {
+      setProducts(data as Product[]);
+    } else {
+      console.error(error);
+    }
+
+    setLoading(false);
+  }
+
+  useEffect(() => {
+    loadProducts();
+
+    // 🔴 REALTIME — КЛЮЧЕВОЕ
+    const channel = supabase
+      .channel('allproducts-changes')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'allproducts' },
+        () => {
+          loadProducts();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [category]);
+
+  if (loading) {
+  return (
+    <div className="h-[40vh] flex flex-col items-center justify-center">
+      <div className="text-6xl animate-pulse mb-4">🍰</div>
+
+      <p className="text-lg text-[#4b2e16] font-medium">
+        Готовим ваш десерт
+        <span className="inline-block ml-1 animate-bounce">.</span>
+        <span className="inline-block ml-1 animate-bounce [animation-delay:150ms]">.</span>
+        <span className="inline-block ml-1 animate-bounce [animation-delay:300ms]">.</span>
+      </p>
+
+      <p className="text-sm text-gray-500 mt-2">
+        Это займёт пару секунд
+      </p>
+    </div>
+  );
+}
+
+
+  if (products.length === 0) {
+    return <p className="text-gray-500">Нет товаров</p>;
+  }
 
   return (
-    <section className="py-14 bg-[#fff9f5]">
-      <div className="container mx-auto px-6 md:px-12">
-
-        {/* Заголовок — выровнен под стиль категории */}
-        <h2 className="text-3xl font-bold text-[#4b2e16] mt-12 mb-10">
-          Наши товары
-        </h2>
-
-        {/* Сетка товаров */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-8 md:gap-10">
-          {filtered.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
-        </div>
-
-      </div>
-    </section>
-
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-8">
+      {products.map((p) => (
+        <ProductCard key={p.id} product={p} />
+      ))}
+    </div>
   );
 }
