@@ -14,8 +14,10 @@ export default function CheckoutPage() {
   const [selectedCard, setSelectedCard] = useState<string | null>(null);
   const [deliveryType, setDeliveryType] = useState<"delivery" | "pickup">("delivery");
 
-  const [phone, setPhone] = useState("");
-  const [name, setName] = useState("");
+    
+  const [showAddCard, setShowAddCard] = useState(false);
+  const [showCardList, setShowCardList] = useState(false);
+ 
 
   const [userId, setUserId] = useState<string | null>(null);
   const [address, setAddress] = useState("");
@@ -26,6 +28,47 @@ export default function CheckoutPage() {
   const [deliveryDate, setDeliveryDate] = useState("");
   const [deliveryTime, setDeliveryTime] = useState("");
   const [comment, setComment] = useState("");
+    function getAvailableTimes(selectedDate: string) {
+      if (!selectedDate) return [];
+
+      const now = new Date();
+      const today = new Date().toISOString().split("T")[0];
+
+      // если дата не сегодня — оба интервала
+      if (selectedDate !== today) {
+        return ["09:30–14:30", "15:00–19:30"];
+      }
+
+      const currentTime = now.getHours() + now.getMinutes() / 60;
+      const times: string[] = [];
+
+      if (currentTime < 14.5) times.push("09:30–14:30");
+      if (currentTime < 15) times.push("15:00–19:30");
+
+      return times;
+    }
+
+
+
+
+  const availableTimes = getAvailableTimes(deliveryDate);
+
+
+  const today = new Date().toISOString().split("T")[0];
+  useEffect(() => {
+    if (!userId) return;
+
+    const loadProfile = async () => {
+      const res = await fetch(`/api/users/get?id=${userId}`);
+      const data = await res.json();
+
+      if (data.ok && data.user) {
+        
+      }
+    };
+
+    loadProfile();
+  }, [userId]);
 
   useEffect(() => {
     const id = localStorage.getItem("user_id");
@@ -36,9 +79,22 @@ export default function CheckoutPage() {
     if (userId) loadCards();
   }, [userId]);
 
+    useEffect(() => {
+      if (!deliveryDate) return;
 
-  const isValidPhone = phone.replace(/\D/g, "").length === 11;
+      const times = getAvailableTimes(deliveryDate);
+
+      if (times.length > 0 && !deliveryTime) {
+        setDeliveryTime(times[0]);
+      }
+    }, [deliveryDate]);
+
+ 
   const totalPrice = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
+  const canSubmit =
+
+    selectedCard &&
+    (deliveryType === "pickup" || deliveryTime);
 
   // === Загружаем карты ===
   const loadCards = async () => {
@@ -73,7 +129,7 @@ export default function CheckoutPage() {
   // === Отправка заказа ===
   const createOrder = async () => {
     if (!selectedCard) return alert("Выберите карту для оплаты");
-    if (!isValidPhone) return alert("Введите корректный телефон");
+   
 
     if (deliveryType === "delivery" && !address) {
       return alert("Введите адрес доставки");
@@ -89,8 +145,7 @@ export default function CheckoutPage() {
         items: cart,
         total: totalPrice,
 
-        name,
-        phone,
+     
 
         delivery_type: deliveryType,
         address,
@@ -114,12 +169,11 @@ export default function CheckoutPage() {
     window.location.href = `/checkout/success?order=${result.order_id}`;
   };
 
-    
-  const [showAddCard, setShowAddCard] = useState(false);
-  const [showCardList, setShowCardList] = useState(false);
+
 
   const selected = cards.find((c) => c.id === selectedCard);
   const others = cards.filter((c) => c.id !== selectedCard);
+
   if (cart.length === 0) {
     return (
       <div className="container mx-auto px-6 py-20 text-center">
@@ -140,8 +194,30 @@ export default function CheckoutPage() {
       </div>
     );
   }
+  
 
 
+
+  function getNextDays(days: number) {
+    const result = [];
+    const today = new Date();
+    
+    for (let i = 0; i < days; i++) {
+      const date = new Date(today);
+      date.setDate(date.getDate() + i);
+      
+      const iso = date.toISOString().split("T")[0];
+      const display = date.toLocaleDateString("ru-RU", {
+        weekday: "short",
+        month: "short",
+        day: "numeric",
+      });
+      
+      result.push({ iso, display });
+    }
+    
+    return result;
+  }
 
   return (
     <div className="container mx-auto px-6 py-10">
@@ -224,11 +300,13 @@ export default function CheckoutPage() {
         </button>
       </div>
 
-      {/* 📍 Адрес */}
+            {/* 📍 Доставка */}
       {deliveryType === "delivery" && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
-          <input
-             className="border rounded-lg p-3"
+        <>
+          {/* Адрес */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <input
+              className="border rounded-lg p-3"
               placeholder="Улица и дом"
               value={address}
               onChange={(e) => setAddress(e.target.value)}
@@ -255,44 +333,75 @@ export default function CheckoutPage() {
               onChange={(e) => setIntercom(e.target.value)}
             />
 
-        </div>
-        
+            <input
+              className="border rounded-lg p-3"
+              placeholder="Этаж"
+              value={floor}
+              onChange={(e) => setFloor(e.target.value)}
+            />
+          </div>
+
+          {/* 📅 Дата и время */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            {/* ℹ️ Инфо */}
+            <div className="md:col-span-2 flex gap-3 items-start bg-[#fff7f8] border border-[#f3c1cc] rounded-xl p-4 text-sm text-gray-700">
+              <span className="text-[#860120] text-lg leading-none">ℹ️</span>
+              <p>
+                <b>Внимание!</b> Доставка производится в двух временных промежутках:
+                <br />
+                <b>09:30–14:30</b> и <b>15:00–19:30</b>.
+                <br />
+                Точного времени нет — курьер позвонит за <b>30 минут</b> до приезда.
+              </p>
+            </div>
+
+            {/* Дата */}
+            <select
+              className="border rounded-lg p-3"
+              value={deliveryDate}
+              onChange={(e) => {
+                setDeliveryDate(e.target.value);
+                setDeliveryTime("");
+              }}
+            >
+              <option value="">Выберите дату</option>
+              {getNextDays(7).map((d) => (
+                <option key={d.iso} value={d.iso}>
+                  {d.display}
+                </option>
+              ))}
+            </select>
+
+            {/* Время */}
+            <select
+              className="border rounded-lg p-3"
+              value={deliveryTime}
+              onChange={(e) => setDeliveryTime(e.target.value)}
+              disabled={!deliveryDate || getAvailableTimes(deliveryDate).length === 0}
+            >
+              <option value="">Выберите время</option>
+              {getAvailableTimes(deliveryDate).map((time) => (
+                <option key={time} value={time}>
+                  {time}
+                </option>
+              ))}
+            </select>
+
+            {/* Ошибка */}
+            {deliveryDate && getAvailableTimes(deliveryDate).length === 0 && (
+              <p className="md:col-span-2 text-red-600 text-sm">
+                На выбранную дату доставка уже недоступна
+              </p>
+            )}
+          </div>
+        </>
       )}
-      <textarea
-        className="border rounded-xl p-3 w-full mt-4"
-        placeholder="Комментарий для курьера"
-        rows={3}
-        value={comment}
-        onChange={(e) => setComment(e.target.value)}
-      />
 
 
 
-      {/* 👤 Контакты */}
-      <h2 className="text-2xl font-semibold mb-3">Контактная информация</h2>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
-        <input
-          className="border rounded-lg p-3"
-          placeholder="Ваше имя"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-    />
 
-        <IMaskInput
-          mask="+7 (000) 000-00-00"
-          value={phone}
-          onAccept={(v: any) => setPhone(v)}
-          className="border rounded-lg p-3"
-          placeholder="+7 (___) ___-__-__"
-        />
-      </div>
-      <h3 className="text-2xl font-semibold mb-3">Комментарий к заказу</h3>
-      <textarea
-        className="border rounded-lg p-3 w-full"
-        placeholder="Комментарий к заказу (например: без орехов, позвонить заранее)"
-        rows={3}
-      />
+
 
 
      
@@ -392,10 +501,10 @@ export default function CheckoutPage() {
         </div>
 
         <button
-          disabled={!isValidPhone || !selectedCard}
+          disabled={!canSubmit}
           onClick={createOrder}
           className={`w-full py-4 mt-4 rounded-xl text-lg ${
-            isValidPhone && selectedCard
+            canSubmit
               ? "bg-[#860120] text-white hover:bg-[#a4022a]"
               : "bg-gray-300 text-gray-500 cursor-not-allowed"
           }`}
