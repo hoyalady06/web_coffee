@@ -1,7 +1,7 @@
 "use client";
 
 import { ReactNode } from "react";
-import { AdminSidebar } from "@/components/AdminSidebar";
+import { AdminSidebar } from "./AdminSidebar";
 
 export function AdminShell({ children }: { children: ReactNode }) {
   return (
