@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
+import { CatalogLoader } from "@/components/ui/CatalogLoader";
 
 const categories = [
   "all",
@@ -116,7 +117,8 @@ export default function AdminProductsPage() {
       </div>
 
       {/* 📦 СПИСОК */}
-      {loading && <p className="text-gray-500">Загрузка…</p>}
+      {loading && <CatalogLoader />}
+
 
       {!loading &&
         products.map((p) => (

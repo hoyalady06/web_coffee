@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import { supabase } from "@/lib/supabaseClient";
+import { CatalogLoader } from "@/components/ui/CatalogLoader";
 
 export default function AdminReturnDetailsPage() {
   const params = useParams();
@@ -17,6 +18,7 @@ export default function AdminReturnDetailsPage() {
 
   const [status, setStatus] = useState<string>("");
   const [adminComment, setAdminComment] = useState<string>("");
+  const [loading, setLoading] = useState(true);
 
   const statusLabels: any = {
     pending: "В ожидании",
@@ -36,8 +38,10 @@ export default function AdminReturnDetailsPage() {
   }, [id]);
 
   async function load() {
-    // 🔹 Возврат
-    const { data: r, error } = await supabase
+  setLoading(true);
+
+  const { data: r, error } = await supabase
+
       .from("returns")
       .select("*")
       .eq("id", id)
@@ -67,6 +71,8 @@ export default function AdminReturnDetailsPage() {
         .single();
 
       setItem(itemData);
+      setLoading(false);
+
     }
   }
 
@@ -118,24 +124,10 @@ export default function AdminReturnDetailsPage() {
 
 
 
-  if (!ret) {
-  return (
-    <div className="h-[40vh] flex flex-col items-center justify-center">
-      <div className="text-5xl animate-pulse mb-3">🍰</div>
-
-      <p className="text-base text-[#4b2e16] font-medium">
-        Загружаем возврат
-        <span className="inline-block ml-1 animate-bounce">.</span>
-        <span className="inline-block ml-1 animate-bounce [animation-delay:150ms]">.</span>
-        <span className="inline-block ml-1 animate-bounce [animation-delay:300ms]">.</span>
-      </p>
-
-      <p className="text-xs text-gray-500 mt-1">
-        Проверяем данные клиента и товара
-      </p>
-    </div>
-  );
+ if (loading) {
+  return <CatalogLoader />;
 }
+
 
 
   const total = (item?.price || 0) * (ret.qty || 0);

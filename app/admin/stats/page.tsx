@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
+import { CatalogLoader } from "@/components/ui/CatalogLoader";
 
 export default function AdminStatsPage() {
   const [stats, setStats] = useState({
@@ -11,13 +12,17 @@ export default function AdminStatsPage() {
     totalRevenue: 0,
     pendingReturns: 0,
   });
+const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     loadStats();
   }, []);
 
   async function loadStats() {
-    const today = new Date().toISOString().slice(0, 10);
+  setLoading(true);
+
+  const today = new Date().toISOString().slice(0, 10);
+
 
     // Всего заказов + общая выручка
     const { data: allOrders } = await supabase
@@ -42,7 +47,13 @@ export default function AdminStatsPage() {
       totalRevenue: allOrders?.reduce((s, o) => s + (o.total || 0), 0) || 0,
       pendingReturns: pendingReturns || 0,
     });
+    setLoading(false);
+
   }
+  if (loading) {
+    return <CatalogLoader />;
+  }
+
 
   return (
     <div className="space-y-8">

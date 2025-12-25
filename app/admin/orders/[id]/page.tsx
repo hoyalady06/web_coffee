@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import { supabase } from "@/lib/supabaseClient";
+import { CatalogLoader } from "@/components/ui/CatalogLoader";
 
 
 export default function AdminOrderDetailsPage() {
@@ -13,6 +14,7 @@ export default function AdminOrderDetailsPage() {
   const [order, setOrder] = useState<any>(null);
   const [items, setItems] = useState<any[]>([]);
   const [user, setUser] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
   const statusLabels: any = {
     processing: "В обработке",
@@ -36,9 +38,10 @@ export default function AdminOrderDetailsPage() {
     load();
   }, []);
 
-  async function load() {
-    // Заказ
-    const { data: orderData } = await supabase
+    async function load() {
+      setLoading(true);
+
+      const { data: orderData } = await supabase
       .from("orders")
       .select("*")
       .eq("id", id)
@@ -64,6 +67,8 @@ export default function AdminOrderDetailsPage() {
       .eq("order_id", id);
 
     setItems(itemsData || []);
+    setLoading(false);
+
   }
 
     async function changeStatus(newStatus: string) {
@@ -86,7 +91,9 @@ export default function AdminOrderDetailsPage() {
     }
 
 
-  if (!order) return <div>Загрузка...</div>;
+  if (loading) {
+  return <CatalogLoader />;
+}
 
   return (
     
