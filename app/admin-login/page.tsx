@@ -7,10 +7,22 @@ export default function AdminLoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
 
   async function login() {
+  if (!email || !password) {
+    alert("Введите email и пароль");
+    return;
+  }
+
+  setLoading(true);
+
+  try {
     const res = await fetch("/api/admin/login", {
       method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify({ email, password }),
     });
 
@@ -21,7 +33,14 @@ export default function AdminLoginPage() {
     } else {
       alert("Неверный логин или пароль");
     }
+  } catch (e) {
+    alert("Ошибка соединения с сервером");
+  } finally {
+    setLoading(false);
   }
+}
+
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#FFFAF9]">
@@ -46,11 +65,13 @@ export default function AdminLoginPage() {
         />
 
         <button
-          onClick={login}
-          className="w-full bg-[#860120] text-white py-3 rounded-xl"
-        >
-          Войти
-        </button>
+        onClick={login}
+        disabled={loading}
+        className="w-full bg-[#860120] text-white py-3 rounded-xl"
+      >
+        {loading ? "🍰 Загружаем..." : "Войти"}
+      </button>
+
       </div>
     </div>
   );

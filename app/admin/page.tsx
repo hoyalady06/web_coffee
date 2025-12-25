@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
+import { CatalogLoader } from "@/components/ui/CatalogLoader";
 
 export default function AdminDashboardPage() {
   const [date, setDate] = useState(
@@ -24,13 +25,15 @@ export default function AdminDashboardPage() {
   });
 
   const [activity, setActivity] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     loadDashboard();
   }, [date]);
 
-  async function loadDashboard() {
-    const start = new Date(date);
+ async function loadDashboard() {
+  setLoading(true);
+    const start = new Date(date); 
     start.setHours(0, 0, 0, 0);
 
     const end = new Date(date);
@@ -80,6 +83,7 @@ export default function AdminDashboardPage() {
       returns: pendingReturns || 0,
       noDeliveryDate,
       oldProcessing,
+    
     });
 
     // ===== ACTIVITY =====
@@ -112,9 +116,12 @@ export default function AdminDashboardPage() {
       .sort((a, b) => b.date.localeCompare(a.date))
       .slice(0, 6);
 
-    setActivity(activityLog);
+     setActivity(activityLog);
+    setLoading(false);
   }
-
+    if (loading) {
+      return <CatalogLoader />;
+    }
   return (
     <div className="space-y-10">
       {/* HEADER */}
