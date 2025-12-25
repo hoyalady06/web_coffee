@@ -1,24 +1,17 @@
-import { NextResponse } from 'next/server';
-import { supabaseServer } from '@/lib/supabaseServer';
+import { NextResponse } from "next/server";
+import { supabaseServer } from "@/lib/supabaseServer";
 
 export async function POST(req: Request) {
+  const { id, status } = await req.json();
   const supabase = supabaseServer();
-  const { id, status, admin_comment } = await req.json();
-
-  if (!id || !status) {
-    return NextResponse.json({ ok: false, error: 'missing_data' });
-  }
 
   const { error } = await supabase
-    .from('returns')
-    .update({
-      status,
-      admin_comment,
-    })
-    .eq('id', id);
+    .from("returns")
+    .update({ status })
+    .eq("id", id);
 
   if (error) {
-    return NextResponse.json({ ok: false, error });
+    return NextResponse.json({ ok: false, error }, { status: 500 });
   }
 
   return NextResponse.json({ ok: true });
