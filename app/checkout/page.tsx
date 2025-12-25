@@ -31,7 +31,10 @@ export default function CheckoutPage() {
   const [isOtherRecipient, setIsOtherRecipient] = useState(false);
   const [recipientName, setRecipientName] = useState("");
   const [recipientPhone, setRecipientPhone] = useState("");
-  
+  // 🎁 БОНУСЫ
+  const [bonusBalance, setBonusBalance] = useState(0);
+  const [useBonus, setUseBonus] = useState(0);
+
 
     function getAvailableTimes(selectedDate: string) {
       if (!selectedDate) return [];
@@ -79,6 +82,22 @@ export default function CheckoutPage() {
     const id = localStorage.getItem("user_id");
     setUserId(id);
   }, []);
+
+  useEffect(() => {
+  if (!userId) return;
+
+    const loadBonus = async () => {
+      const res = await fetch(`/api/bonus/get?user_id=${userId}`);
+      const data = await res.json();
+
+      if (data.ok) {
+        setBonusBalance(data.balance);
+      }
+    };
+
+    loadBonus();
+  }, [userId]);
+
 
   useEffect(() => {
     if (userId) loadCards();
@@ -154,7 +173,7 @@ export default function CheckoutPage() {
         user_id: userId,
         items: cart,
         total: totalPrice,
-
+        use_bonus: useBonus, // 🔥 ВАЖНО
         delivery_type: deliveryType,
         address,
         apartment,
@@ -240,7 +259,9 @@ export default function CheckoutPage() {
       ? DELIVERY_PRICE
       : 0;
 
-  const finalTotal = totalPrice + deliveryCost;
+  const finalTotal =
+  totalPrice - useBonus + deliveryCost;
+
 
 
   return (
@@ -560,6 +581,29 @@ export default function CheckoutPage() {
 
 
     </div>
+
+      {/* 🎁 БОНУСЫ */}
+      {bonusBalance > 0 && (
+        <div className="mt-4 bg-[#fff7f8] border border-[#f3c1cc] rounded-xl p-4 space-y-2">
+          <p className="font-medium text-[#860120]">
+            🎁 У вас {bonusBalance} бонусов
+          </p>
+
+          <input
+            type="number"
+            min={0}
+            max={Math.min(bonusBalance, totalPrice)}
+            value={useBonus}
+            onChange={(e) => setUseBonus(Number(e.target.value))}
+            className="border rounded-lg px-3 py-2 w-full"
+            placeholder="Сколько списать"
+          />
+
+          <p className="text-xs text-gray-500">
+            Бонусами нельзя оплатить доставку
+          </p>
+        </div>
+      )}
 
       {/* 🧾 Итог */}
       <div className="bg-white shadow p-6 rounded-xl max-w-md">
