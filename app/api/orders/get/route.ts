@@ -1,6 +1,26 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabaseClient";
 
+// порядок статусов — КЛЮЧЕВО
+const STATUS_FLOW = [
+  "processing",
+  "confirmed",
+  "preparing",
+  "on_way",
+  "delivered",
+  "canceled",
+];
+
+// текст для истории
+const STATUS_TEXT: any = {
+  processing: "Оформлен",
+  confirmed: "Подтверждён",
+  preparing: "Готовится",
+  on_way: "Курьер в пути",
+  delivered: "Доставлен",
+  canceled: "Отменён",
+};
+
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const id = searchParams.get("id");
@@ -9,19 +29,17 @@ export async function GET(req: Request) {
     return NextResponse.json({ ok: false, error: "missing_id" });
   }
 
-  // 1️⃣ Сам заказ
-  const { data: order, error: orderError } = await supabase
+  const { data: order, error } = await supabase
     .from("orders")
     .select("*")
     .eq("id", id)
     .single();
 
-  if (orderError) {
-    return NextResponse.json({ ok: false, error: orderError });
+  if (error || !order) {
+    return NextResponse.json({ ok: false, error: "order_not_found" });
   }
 
-  // 2️⃣ Товары заказа — ВАЖНО: product_id
-  const { data: items, error: itemsError } = await supabase
+  const { data: items } = await supabase
     .from("order_items")
     .select(`
       id,
@@ -29,21 +47,27 @@ export async function GET(req: Request) {
       product_name,
       image,
       price,
-      qty,
-      returns (
-        id,
-        status
-      )
+      qty
     `)
     .eq("order_id", id);
 
-  if (itemsError) {
-    return NextResponse.json({ ok: false, error: itemsError });
+  // 🔥 ГЛАВНАЯ ЛОГИКА — ГЕНЕРАЦИЯ ИСТОРИИ
+  const currentStatusIndex = STATUS_FLOW.indexOf(order.status);
+
+  let generatedHistory = [];
+
+  if (currentStatusIndex !== -1) {
+    for (let i = 0; i <= currentStatusIndex; i++) {
+      generatedHistory.push({
+        status: STATUS_FLOW[i],
+        label: STATUS_TEXT[STATUS_FLOW[i]],
+        created_at: order.created_at, // для MVP одинаковое время
+      });
+    }
   }
 
+  order.status_history = generatedHistory;
   order.items = items ?? [];
 
   return NextResponse.json({ ok: true, order });
 }
-
-//Goooo
