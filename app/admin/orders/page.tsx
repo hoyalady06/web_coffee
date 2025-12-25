@@ -76,24 +76,36 @@ const [date, setDate] = useState("");
     setOrders(data || []);
   }
 
-  async function changeStatus(orderId: string, status: string) {
-    const { error } = await supabase
-      .from("orders")
-      .update({ status })
-      .eq("id", orderId);
+      async function changeStatus(orderId: string, newStatus: string) {
+        const res = await fetch("/api/orders/update-status", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            order_id: orderId,
+            new_status: newStatus,
+          }),
+        });
 
-    if (!error) {
-      setOrders((prev) =>
-        prev.map((o) => (o.id === orderId ? { ...o, status } : o))
-      );
+        const data = await res.json();
 
-      setToast({ message: "Статус заказа обновлён", type: "success" });
-      setTimeout(() => setToast(null), 2500);
-    } else {
-      setToast({ message: "Ошибка при обновлении статуса", type: "error" });
-      setTimeout(() => setToast(null), 3000);
-    }
-  }
+        if (data.ok) {
+          setOrders((prev) =>
+            prev.map((o) =>
+              o.id === orderId ? { ...o, status: newStatus } : o
+            )
+          );
+
+          setToast({ message: "Статус заказа обновлён", type: "success" });
+          setTimeout(() => setToast(null), 2500);
+        } else {
+          setToast({ message: "Ошибка при обновлении статуса", type: "error" });
+          setTimeout(() => setToast(null), 3000);
+        }
+      }
+
+
+
+
 
   function getFilteredOrders() {
     if (filter === "all") return orders;
