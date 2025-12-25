@@ -66,10 +66,25 @@ export default function AdminOrderDetailsPage() {
     setItems(itemsData || []);
   }
 
-  async function changeStatus(status: string) {
-    await supabase.from("orders").update({ status }).eq("id", id);
-    setOrder((prev: any) => ({ ...prev, status }));
-  }
+    async function changeStatus(newStatus: string) {
+      const res = await fetch("/api/orders/update-status", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          order_id: order.id,
+          new_status: newStatus,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (data.ok) {
+        await load(); // 🔄 перезагружаем заказ
+      } else {
+        alert("Ошибка при обновлении статуса");
+      }
+    }
+
 
   if (!order) return <div>Загрузка...</div>;
 
