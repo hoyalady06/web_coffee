@@ -29,6 +29,7 @@ export async function GET(req: Request) {
     return NextResponse.json({ ok: false, error: "missing_id" });
   }
 
+  /* ================== ЗАКАЗ ================== */
   const { data: order, error } = await supabase
     .from("orders")
     .select("*")
@@ -39,6 +40,7 @@ export async function GET(req: Request) {
     return NextResponse.json({ ok: false, error: "order_not_found" });
   }
 
+  /* ================== ТОВАРЫ ================== */
   const { data: items } = await supabase
     .from("order_items")
     .select(`
@@ -51,23 +53,35 @@ export async function GET(req: Request) {
     `)
     .eq("order_id", id);
 
-  // 🔥 ГЛАВНАЯ ЛОГИКА — ГЕНЕРАЦИЯ ИСТОРИИ
-  const currentStatusIndex = STATUS_FLOW.indexOf(order.status);
+  /* ================== БОНУСЫ ================== */
+  const { data: bonus } = await supabase
+    .from("bonus_history")
+    .select("amount")
+    .eq("order_id", id)
+    .eq("type", "earn")
+    .single();
 
-  let generatedHistory = [];
+  /* ================== ИСТОРИЯ СТАТУСОВ ================== */
+  const currentStatusIndex = STATUS_FLOW.indexOf(order.status);
+  const generatedHistory: any[] = [];
 
   if (currentStatusIndex !== -1) {
     for (let i = 0; i <= currentStatusIndex; i++) {
       generatedHistory.push({
         status: STATUS_FLOW[i],
         label: STATUS_TEXT[STATUS_FLOW[i]],
-        created_at: order.created_at, // для MVP одинаковое время
+        created_at: order.created_at, // MVP — одно время
       });
     }
   }
 
-  order.status_history = generatedHistory;
+  /* ================== ФИНАЛ ================== */
   order.items = items ?? [];
+  order.status_history = generatedHistory;
+
+  // 🔥 ВАЖНО: бонусы приходят ЯВНО
+  order.bonus_credited = !!bonus;
+  order.bonus_amount = bonus?.amount ?? 0;
 
   return NextResponse.json({ ok: true, order });
 }
