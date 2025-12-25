@@ -232,6 +232,17 @@ export default function CheckoutPage() {
     return result;
   }
 
+  const FREE_DELIVERY_FROM = 10000;
+  const DELIVERY_PRICE = 2000;
+
+  const deliveryCost =
+    deliveryType === "delivery" && totalPrice < FREE_DELIVERY_FROM
+      ? DELIVERY_PRICE
+      : 0;
+
+  const finalTotal = totalPrice + deliveryCost;
+
+
   return (
     <div className="container mx-auto px-6 py-10">
       <h1 className="text-3xl font-bold mb-8">Оформление заказа</h1>
@@ -312,7 +323,23 @@ export default function CheckoutPage() {
           Самовывоз
         </button>
       </div>
-
+      {deliveryType === "delivery" && (
+        <div className="mb-6 bg-[#fff7f8] border border-[#f3c1cc] rounded-xl p-4 text-sm text-gray-700">
+          {totalPrice >= 10000 ? (
+            <p className="text-[#860120] font-medium">
+              🚚 Бесплатная доставка при заказе от 10 000 ₸
+            </p>
+          ) : (
+            <p>
+              🚚 Доставка по городу — <b>2 000 ₸</b>  
+              <br />
+              <span className="text-gray-500">
+                Бесплатно при заказе от 10 000 ₸
+              </span>
+            </p>
+          )}
+        </div>
+      )}
             {/* 📍 Доставка */}
       {deliveryType === "delivery" && (
         <>
@@ -538,9 +565,25 @@ export default function CheckoutPage() {
       <div className="bg-white shadow p-6 rounded-xl max-w-md">
         <p className="text-xl font-semibold mb-3">Ваш заказ</p>
 
-        <div className="flex justify-between mb-3">
-          <span>Сумма</span>
-          <span className="font-bold">{totalPrice.toLocaleString("ru-RU")} ₸</span>
+        <div className="flex justify-between mb-2">
+          <span>Товары</span>
+          <span>{totalPrice.toLocaleString("ru-RU")} ₸</span>
+        </div>
+
+        {deliveryType === "delivery" && (
+          <div className="flex justify-between mb-2">
+            <span>Доставка</span>
+            <span>
+              {deliveryCost === 0 ? "Бесплатно" : `${deliveryCost.toLocaleString("ru-RU")} ₸`}
+            </span>
+          </div>
+        )}
+
+        <hr className="my-3" />
+
+        <div className="flex justify-between text-lg font-bold">
+          <span>Итого</span>
+          <span>{finalTotal.toLocaleString("ru-RU")} ₸</span>
         </div>
 
         <button
@@ -553,9 +596,7 @@ export default function CheckoutPage() {
           }`}
         >
           Сделать заказ
-        </button>
-
-        
+        </button> 
       </div>
       
     </div>
