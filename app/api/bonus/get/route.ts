@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { supabaseServer } from "@/lib/supabaseServer";
 
-const USER_ID = "7220c444-8a5f-4d2f-b2b5-f47703d1583a";
+const USER_ID = "a9548a07-4e70-4155-b047-f7c101ce8042";
 
 export async function GET() {
   const supabase = supabaseServer();
