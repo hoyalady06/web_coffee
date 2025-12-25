@@ -18,11 +18,36 @@ export default function OrderDetails() {
     if (data.ok) setOrder(data.order);
   };
 
+  
+
   useEffect(() => {
     loadOrder();
   }, [id]);
 
   if (!order) return <p>Загрузка...</p>;
+  const FREE_DELIVERY_FROM = 10000;
+  const DELIVERY_PRICE = 2000;
+
+  const safeTotal = Number(order.total ?? 0);
+
+  const safeDeliveryPrice =
+    typeof order.delivery_price === "number"
+      ? order.delivery_price
+      : order.delivery_type === "delivery" && safeTotal < FREE_DELIVERY_FROM
+        ? DELIVERY_PRICE
+        : 0;
+
+ const productsTotal =
+  safeTotal + (order.used_bonus ?? 0) - safeDeliveryPrice;
+
+  
+
+  const BONUS_PERCENT = 0.05;
+  const bonusAmount =
+    productsTotal > 0
+      ? Math.floor(productsTotal * BONUS_PERCENT)
+      : 0;
+
 
   /* ===== СТАТУС ЗАКАЗА ===== */
   const statusLabels: any = {
@@ -42,6 +67,28 @@ export default function OrderDetails() {
     delivered: "bg-green-100 text-green-700",
     canceled: "bg-red-100 text-red-700",
   };
+
+  /* ===== ФОРМАТ ДАТЫ ДЛЯ ИСТОРИИ ===== */
+  const formatHistoryDate = (date: string) => {
+    const d = new Date(date);
+    return d.toLocaleString("ru-RU", {
+      day: "numeric",
+      month: "long",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
+
+  /* ===== ТЕКСТ ИСТОРИИ (НАШИ СТАТУСЫ) ===== */
+  const historyStatusText: any = {
+    processing: "Оформлен",
+    confirmed: "Подтверждён",
+    preparing: "Готовится",
+    on_way: "Курьер в пути",
+    delivered: "Доставлен",
+    canceled: "Отменён",
+  };
+
 
   /* ===== СТАТУС ВОЗВРАТА ===== */
   const returnStatusLabels: any = {
@@ -71,122 +118,238 @@ export default function OrderDetails() {
     alert("Товары добавлены в корзину");
   };
 
-  return (
-    <div>
-      <h1 className="text-3xl font-bold mb-8">Детали заказа</h1>
+  
+return (
+  <div className="max-w-5xl space-y-8">
+    {/* ===== HEADER ===== */}
+    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <h1 className="text-4xl font-semibold text-gray-900">
+        Детали заказа
+      </h1>
 
-      {/* ===== ИНФО О ЗАКАЗЕ ===== */}
-      <div className="border rounded-2xl p-6 shadow-sm mb-10 relative">
-        {/* статус заказа */}
-        <div className="absolute top-4 right-4">
-          <span
-            className={`px-3 py-1 rounded-full text-sm font-medium ${statusColors[order.status]}`}
-          >
-            {statusLabels[order.status] || order.status}
-          </span>
-        </div>
+      <span
+        className={`inline-flex items-center px-4 py-2 rounded-full text-sm font-medium ${statusColors[order.status]}`}
+      >
+        {statusLabels[order.status]}
+      </span>
+    </div>
 
-        <p className="text-lg">
-          Номер заказа: <b>#{order.id.slice(0, 6)}</b>
+    {/* ===== ORDER SUMMARY ===== */}
+    <div className="bg-white border rounded-2xl px-6 py-5 grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-4">
+      <div>
+        <p className="text-sm text-gray-500">Номер заказа</p>
+        <p className="text-xl font-semibold text-gray-900">
+          #{order.id.slice(0, 6)}
         </p>
-
-        <p className="mt-2">
-          Дата заказа: {order.created_at.replace("T", " ").slice(0, 16)}
-        </p>
-
-        <p className="mt-2">
-          Сумма заказа: <b>{order.total.toLocaleString("ru-RU")} ₸</b>
-        </p>
-
-        <p className="mt-2">
-          Оплата:{" "}
-          <b>
-            {order.payment_last4
-              ? `•••• ${order.payment_last4}`
-              : "Наличные / при получении"}
-          </b>
-        </p>
-
-        <p className="mt-2">
-          Тип доставки:{" "}
-          {order.delivery_type === "delivery" ? "Доставка" : "Самовывоз"}
-        </p>
-
-        <p className="mt-2">Телефон: {order.phone}</p>
       </div>
 
-      {/* ===== ТОВАРЫ ===== */}
-      <h2 className="text-2xl font-bold mb-4">Товары в заказе</h2>
-
-<div className="space-y-4">
-  {order.items.map((item: any, i: number) => (
-    <Link
-      key={item.id}               // ← ВОТ ЭТО ОБЯЗАТЕЛЬНО
-      href={`/product/${item.product_id}`}
-      className="block"
-      >
-      <div
-        className="relative flex gap-4 p-4 border rounded-xl shadow-sm 
-                   hover:shadow-md transition cursor-pointer"
-      >
-        {/* BADGE ВОЗВРАТА */}
-        {item.returns?.length > 0 && (
-          <div className="absolute top-3 right-3 z-10">
-            <span
-              className={`px-3 py-1 rounded-full text-xs font-medium
-              ${returnStatusColors[item.returns[0].status]}`}
-            >
-              {returnStatusLabels[item.returns[0].status]}
-            </span>
-          </div>
-        )}
-
-        <Image
-          src={item.image}
-          alt={item.product_name || "product image"}
-          width={70}
-          height={70}
-          className="rounded-xl border"
-        />
-
-        <div>
-          <p className="font-semibold text-lg">
-            {item.name || item.product_name}
-          </p>
-          <p className="text-gray-600">Цена: {item.price} ₸</p>
-          <p className="text-gray-600">Кол-во: {item.qty}</p>
-        </div>
+      <div>
+        <p className="text-sm text-gray-500">Дата заказа</p>
+        <p className="text-lg text-gray-900">
+          {order.created_at.replace("T", " ").slice(0, 16)}
+        </p>
       </div>
-    </Link>
-  ))}
-</div>
 
-
-      {/* ===== КНОПКИ ===== */}
-      <div className="flex gap-4 mt-10">
-        <button
-          onClick={() => history.back()}
-          className="px-6 py-3 rounded-xl border"
-        >
-          ← Вернуться назад
-        </button>
-
-        <button
-          onClick={repeatOrder}
-          className="px-6 py-3 rounded-xl bg-[#860120] text-white"
-        >
-          Повторить заказ
-        </button>
-
-        <button
-          onClick={() =>
-            (window.location.href = `/profile/orders/${order.id}/return`)
-          }
-          className="px-6 py-3 rounded-xl border border-[#860120] text-[#860120]"
-        >
-          Оформить возврат
-        </button>
+      <div>
+        <p className="text-sm text-gray-500">Сумма</p>
+        <p className="text-2xl font-semibold text-gray-900">
+          {order.total.toLocaleString("ru-RU")} ₸
+        </p>
+        <p className="text-sm text-gray-600 mt-1">
+          Оплата: •••• {order.payment_last4}
+        </p>
       </div>
     </div>
-  );
+
+  <div className="bg-white border rounded-2xl px-6 py-5 space-y-2">
+    <div className="flex justify-between text-gray-600">
+      <span>Товары</span>
+      <span>
+        {productsTotal.toLocaleString("ru-RU")} ₸
+      </span>
+
+    </div>
+
+    {order.delivery_type === "delivery" && (
+      <div className="flex justify-between text-gray-600">
+        <span>Доставка</span>
+        <span>
+          {safeDeliveryPrice === 0
+          ? "Бесплатно"
+          : `${safeDeliveryPrice.toLocaleString("ru-RU")} ₸`}
+
+        </span>
+      </div>
+    )}
+
+    {/* 🎁 Оплата бонусами */}
+    {order.used_bonus > 0 && (
+      <div className="flex justify-between text-green-700 font-medium">
+        <span>Оплачено бонусами</span>
+        <span>−{order.used_bonus} Б</span>
+      </div>
+    )}
+
+
+    <div className="flex justify-between font-bold text-lg pt-2 border-t">
+      <span>Итого</span>
+      <span>{order.total.toLocaleString("ru-RU")} ₸</span>
+    </div>
+   {!order.bonus_credited && bonusAmount > 0 && (
+    <div className="text-green-600">
+      🎁 После доставки вам будет начислено +{bonusAmount} бонусов
+    </div>
+  )}
+
+  {order.bonus_credited && (
+    <div className="text-blue-600">
+      ✅ Начислено +{order.bonus_amount} бонусов
+    </div>
+  )}
+
+
+
+  </div>
+
+
+
+    {/* ===== DELIVERY ===== */}
+    {order.delivery_type === "delivery" && (
+      <div className="bg-white border rounded-2xl p-8 space-y-6">
+        <h2 className="text-2xl font-semibold text-gray-900 flex items-center gap-3">
+          🚚 Доставка
+        </h2>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+          <div>
+            <p className="text-sm text-gray-500 mb-1">Дата и время</p>
+            <p className="text-lg text-gray-900 font-medium">
+              {order.delivery_date}, {order.delivery_time}
+            </p>
+          </div>
+
+          <div>
+            <p className="text-sm text-gray-500 mb-1">Получатель</p>
+            <p className="text-lg font-medium text-gray-900">
+              {order.recipient_name || "Вы"}
+            </p>
+            <p className="text-base text-gray-600">
+              {order.recipient_phone || order.phone}
+            </p>
+          </div>
+
+          <div className="md:col-span-2">
+            <p className="text-sm text-gray-500 mb-1">Адрес доставки</p>
+            <p className="text-lg font-medium text-gray-900">
+              {order.address}
+            </p>
+            <p className="text-base text-gray-600">
+              кв. {order.apartment || "—"}, подъезд {order.entrance || "—"}, этаж {order.floor || "—"}
+              {order.intercom && `, домофон ${order.intercom}`}
+            </p>
+          </div>
+        </div>
+      </div>
+    )}
+
+    {/* ===== PRODUCTS ===== */}
+    <div className="space-y-6">
+      <h2 className="text-2xl font-semibold text-gray-900 flex items-center gap-3">
+        📦 Товары в заказе
+      </h2>
+
+      {order.items.map((item: any) => (
+        <div
+          key={item.id}
+          className="flex items-center gap-6 bg-white border rounded-2xl p-6"
+        >
+          <Image
+            src={item.image}
+            alt={item.product_name}
+            width={96}
+            height={96}
+            className="rounded-xl border"
+          />
+
+          <div className="flex-1">
+            <p className="text-xl font-medium text-gray-900">
+              {item.name || item.product_name}
+            </p>
+            <p className="text-base text-gray-600 mt-1">
+              Цена: {item.price} ₸ · Кол-во: {item.qty}
+            </p>
+          </div>
+        </div>
+      ))}
+    </div>
+
+    {/* ===== ACTIONS ===== */}
+    <div className="flex flex-col md:flex-row gap-4 pt-4">
+      <button
+        onClick={() => history.back()}
+        className="px-7 py-4 rounded-xl border text-base font-medium"
+      >
+        ← Вернуться назад
+      </button>
+
+      <button
+        onClick={repeatOrder}
+        className="px-7 py-4 rounded-xl bg-[#860120] text-white text-base font-medium"
+      >
+        Повторить заказ
+      </button>
+
+      <button
+        onClick={() =>
+          (window.location.href = `/profile/orders/${order.id}/return`)
+        }
+        className="px-7 py-4 rounded-xl border border-[#860120] text-[#860120] text-base font-medium"
+      >
+        Оформить возврат
+      </button>
+    </div>
+    {order.status_history?.length > 0 && (
+      <div className="bg-white border rounded-xl px-6 py-5">
+        <h3 className="text-base font-semibold mb-4 text-gray-900">
+          История заказа
+        </h3>
+
+        <div className="relative pl-4 space-y-4">
+          {/* вертикальная линия */}
+          <div className="absolute left-1 top-1 bottom-1 w-px bg-gray-200" />
+
+          {order.status_history
+              .slice()
+              .reverse()
+              .map((item: any, i: number) => (
+              <div key={i} className="relative flex gap-3">
+                {/* точка */}
+                <div
+                  className={`mt-1 w-2 h-2 rounded-full shrink-0 ${
+                    i === 0 ? "bg-[#860120]" : "bg-gray-300"
+                  }`}
+                />
+
+                {/* текст */}
+                <div className="flex flex-col">
+                  <span className="text-xs text-gray-500">
+                    {formatHistoryDate(item.created_at)}
+                  </span>
+
+                  <span className="text-sm font-medium text-gray-900">
+                  {historyStatusText[item.status]}
+                </span>
+
+
+                </div>
+              </div>
+            ))}
+
+        </div>
+      </div>
+)}
+
+  </div>
+);
+
 }
