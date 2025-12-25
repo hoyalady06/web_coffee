@@ -8,6 +8,7 @@ export async function POST(req: Request) {
     user_id,
     items,
     total,
+    use_bonus = 0,
 
     payment_method,
     payment_last4,
@@ -26,7 +27,7 @@ export async function POST(req: Request) {
     recipient_phone,
   } = body;
 
-  // ===== ПРОВЕРКИ =====
+  /* ===== ПРОВЕРКИ ===== */
   if (!user_id) {
     return NextResponse.json({ ok: false, error: "no_user" });
   }
@@ -38,6 +39,8 @@ export async function POST(req: Request) {
   if (!total || total <= 0) {
     return NextResponse.json({ ok: false, error: "incorrect_total" });
   }
+
+  /* ===== ДОСТАВКА ===== */
   const FREE_DELIVERY_FROM = 10000;
   const DELIVERY_PRICE = 2000;
 
@@ -48,21 +51,41 @@ export async function POST(req: Request) {
 
   const finalTotal = total + deliveryPrice;
 
-  // ===== ПРОФИЛЬ ПОЛЬЗОВАТЕЛЯ =====
-  const { data: user, error: userError } = await supabase
+  /* ===== ПОЛЬЗОВАТЕЛЬ ===== */
+  const { data: user } = await supabase
     .from("users")
     .select("name, phone")
     .eq("id", user_id)
     .single();
 
-  if (userError || !user) {
+  if (!user) {
     return NextResponse.json({ ok: false, error: "user_not_found" });
   }
 
-  // ===== ВРЕМЯ =====
+  /* ===== БОНУСЫ ===== */
+  const { data: bonusRow } = await supabase
+    .from("user_bonus")
+    .select("balance")
+    .eq("user_id", user_id)
+    .maybeSingle();
+
+  const bonusBalance = bonusRow?.balance || 0;
+
+  // бонусами нельзя оплачивать доставку
+  const productsTotal = total;
+
+  const bonusToUse = Math.min(
+    Number(use_bonus),
+    bonusBalance,
+    productsTotal
+  );
+
+  const finalTotalWithBonus = finalTotal - bonusToUse;
+
+  /* ===== ВРЕМЯ ===== */
   const now = new Date().toISOString();
 
-  // ===== СОЗДАНИЕ ЗАКАЗА (ВАЖНО) =====
+  /* ===== СОЗДАНИЕ ЗАКАЗА ===== */
   const { data: order, error: orderError } = await supabase
     .from("orders")
     .insert({
@@ -73,10 +96,10 @@ export async function POST(req: Request) {
       recipient_name,
       recipient_phone,
 
-      total: finalTotal,          // 👈 итог с доставкой
-      delivery_price: deliveryPrice, // 👈 СОХРАНЯЕМ ДОСТАВКУ
+      total: finalTotalWithBonus,
+      delivery_price: deliveryPrice,
+      used_bonus: bonusToUse,
 
-      
       delivery_type,
       address,
       apartment,
@@ -90,7 +113,6 @@ export async function POST(req: Request) {
       payment_method,
       payment_last4,
 
-      // 🔴 КЛЮЧЕВОЕ МЕСТО
       status: "processing",
       status_history: [
         {
@@ -107,23 +129,36 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false, error: "order_create_failed" });
   }
 
-  // ===== ТОВАРЫ ЗАКАЗА =====
+  /* ===== ТОВАРЫ ===== */
   for (const item of items) {
-    const { error: itemError } = await supabase
-      .from("order_items")
-      .insert({
-        order_id: order.id,
-        product_id: item.id,
-        product_name: item.name,
-        image: item.image,
-        price: item.price,
-        qty: item.qty,
-      });
+    const { error } = await supabase.from("order_items").insert({
+      order_id: order.id,
+      product_id: item.id,
+      product_name: item.name,
+      image: item.image,
+      price: item.price,
+      qty: item.qty,
+    });
 
-    if (itemError) {
-      console.error("ORDER ITEM ERROR:", itemError);
+    if (error) {
+      console.error("ORDER ITEM ERROR:", error);
       return NextResponse.json({ ok: false, error: "order_item_failed" });
     }
+  }
+
+  /* ===== СПИСАНИЕ БОНУСОВ ===== */
+  if (bonusToUse > 0) {
+    await supabase
+      .from("user_bonus")
+      .update({ balance: bonusBalance - bonusToUse })
+      .eq("user_id", user_id);
+
+    await supabase.from("bonus_history").insert({
+      user_id,
+      order_id: order.id,
+      type: "spend",
+      amount: bonusToUse,
+    });
   }
 
   return NextResponse.json({ ok: true, order_id: order.id });
